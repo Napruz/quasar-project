@@ -1,30 +1,36 @@
-<template>
-  <q-expansion-item
-    v-for="category in categories"
-    :key="category.id"
-    :icon="category.icon"
-    :label="removeNbsp(category.text)"
-    class="text-white link-text"
-    label-class="text-white"
-    icon-class="text-white"
-    :hide-expand-icon="!hasChildren(category.id)" 
-    :model-value="openedItem === category.id"
-    @update:model-value="(value) => onItemToggle(category.id, value)"
-  >
-    <!-- ... (остальное содержимое q-expansion-item) ... -->
-  </q-expansion-item>
-</template>
+   <template>
+     <div class="down-button" :class="transformButton(index)">
+       <q-btn
+         flat
+         round
+         color="primary"
+         padding="none"
+         size="md"
+         icon="mdi-chevron-down"
+         @click="
+           currentCategoryIndex.value === index && isBannerVisible.value
+             ? hideBanner()
+             : showBanner(index)
+         "
+       />
+     </div>
+   </template>
 
-<script>
-// ... (другой код) ...
-
-setup() {
-  // ... (другие переменные) ...
-
-  const hasChildren = (categoryId) => {
-    return categories.value.some((category) => category.parent_id === categoryId);
-  };
-
-  // ... (остальной код) ...
-}
-</script>
+   <script>
+   // ... ваш код ...
+ 
+   methods: {
+     // ... ваш код ...
+ 
+     showBanner(index) {
+       isBannerVisible.value = true; // Используем `value` для изменения ref
+       currentCategoryIndex.value = index;
+     },
+     
+     hideBanner() {
+       isBannerVisible.value = false; // Используем `value` для изменения ref
+     },
+     // ... ваш код ...
+   }
+   </script>
+   
