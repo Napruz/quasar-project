@@ -7,7 +7,7 @@
     class="text-white link-text"
     label-class="text-white"
     icon-class="text-white"
-    :expand-icon-class="expandIconClass(category)"
+    :hide-expand-icon="!hasChildren(category.id)" 
     :model-value="openedItem === category.id"
     @update:model-value="(value) => onItemToggle(category.id, value)"
   >
@@ -16,20 +16,15 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
+// ... (другой код) ...
 
-export default {
-  name: "MyLayout",
-  setup() {
-    // ... (другие переменные) ...
+setup() {
+  // ... (другие переменные) ...
 
-    const expandIconClass = computed(() => (category) => {
-      return category.parent_id === '' ? 'q-pa-none' : 'text-white';
-    });
+  const hasChildren = (categoryId) => {
+    return categories.value.some((category) => category.parent_id === categoryId);
+  };
 
-    // ... (остальной код) ...
-  }
-};
+  // ... (остальной код) ...
+}
 </script>
