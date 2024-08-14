@@ -1,4 +1,3 @@
-
 <template>
   <div class="main-container row justify-between">
     <div class="content-container">
@@ -6,18 +5,15 @@
         <q-breadcrumbs class="q-mt-lg g-ml-lg text-primary">
           <q-breadcrumbs-el label="Учебный центр" :to="{ path: '/' }" />
           <q-breadcrumbs-el label="Каталог курсов" :to="{ path: 'content' }" />
-          <q-breadcrumbs-el :label="currentCategory" />
+          <q-breadcrumbs-el :label="currentCategoryTitle" />
         </q-breadcrumbs>
       </div>
 
       <div class="container row">
         <div class="column items-start q-pl-sm q-ml-xl q-mt-sm">
           <div class="header-container">
-            <p
-              class="text-3 text-weight-regular text-uppercase text-primary text-weight-bold"
-              style="font-size: 25px"
-            >
-              {{ currentCategory }}
+            <p class="text-3 text-weight-regular text-uppercase text-primary text-weight-bold" style="font-size: 25px">
+              {{ currentCategoryTitle }}
             </p>
           </div>
 
@@ -55,20 +51,11 @@
 
           <div v-if="isListView" class="list">
             <ul class="categories-list">
-              <li
-                v-for="category in catalogItems"
-                :key="category.id"
-                class="list-item"
-              >
+              <li v-for="category in catalogItems" :key="category.id" class="list-item">
                 <div class="row justify-between">
                   <div class="active-hover row">
-                    <p
-                      class="text-body1 text-primary text-weight-bold q-mr-sm underline-text"
-                    >
-                      <router-link
-                        :to="category.path"
-                        style="text-decoration: none"
-                      >
+                    <p class="text-body1 text-primary text-weight-bold q-mr-sm underline-text">
+                      <router-link :to="category.path" style="text-decoration: none">
                         {{ category.title }}
                       </router-link>
                     </p>
@@ -91,7 +78,7 @@
                       size="10px"
                       class="q-ml-xl text-white gradient-button"
                       label="Описание"
-                      :to="{ path: category.path + '/' + category.id }"
+                      :to="{ path: category.path + '/:' + category.id }"
                     />
                   </div>
                 </div>
@@ -119,32 +106,16 @@
 
           <div v-else class="list-card">
             <ul class="categories-list categories-card">
-              <li
-                v-for="category in catalogItems"
-                :key="category.id"
-                class="card-item"
-              >
-                <div
-                  class="card-container q-py-md row q-gutter-md row wrap"
-                  style="margin-left: 1px"
-                >
-                  <router-link :to="`/course/${category.id}`" style="text-decoration: none">
-                    <q-card
-                      class="my-card col-3 shadow-3 position-relative"
-                      bordered
-                    >
+              <li v-for="category in catalogItems" :key="category.id" class="card-item">
+                <div class="card-container q-py-md row q-gutter-md row wrap" style="margin-left: 1px">
+                  <router-link to="course" style="text-decoration: none">
+                    <q-card class="my-card col-3 shadow-3 position-relative" bordered>
                       <q-card-section horizontal>
                         <q-card-section class="q-pt-xs">
-                          <div
-                            class="text-h5 q-mt-sm q-mb-xs text-weight-bold ellipsis-1-lines"
-                            style="font-size: medium"
-                          >
+                          <div class="text-h5 q-mt-sm q-mb-xs text-weight-bold ellipsis-1-lines" style="font-size: medium">
                             {{ category.title }}
                           </div>
-                          <div
-                            class="text-subtitle1 q-mt-sm q-mb-xs"
-                            style="font-size: small; font-weight: 500"
-                          >
+                          <div class="text-subtitle1 q-mt-sm q-mb-xs" style="font-size: small; font-weight: 500">
                             Цель курса?
                           </div>
                           <div class="text-caption text-grey ellipsis-2-lines">
@@ -154,14 +125,7 @@
                       </q-card-section>
 
                       <div class="course-time">
-                        <q-icon
-                          flat
-                          size="large"
-                          name="schedule"
-                          color="secondary"
-                          style="margin-top: 1px"
-                          class="time-icon"
-                        />
+                        <q-icon flat size="large" name="schedule" color="secondary" style="margin-top: 1px" class="time-icon" />
                         <div flat class="q-ml-sm card-time">
                           {{ category.bannerTime }} мин
                         </div>
@@ -188,7 +152,7 @@ export default {
   setup() {
     return {
       tab: ref("skills"),
-      currentCategory: ref(""),
+      currentCategoryTitle: ref(""),
     };
   },
   data() {
@@ -202,33 +166,28 @@ export default {
     toggleListView() {
       this.isListView = !this.isListView;
     },
+
     toggleBanner(categoryId) {
       this.activeBanner = this.activeBanner === categoryId ? null : categoryId;
     },
+
     async fetchCatalogItemsData() {
       const params = {
         collection_code: "vtbl_quasar_courses_list",
       };
-
       const categoryId = this.$route.params.id.substring(1);
 
       try {
-        const response = await axios.post(
-          BACKEND_URL,
-          new URLSearchParams(params).toString()
-        );
+        const response = await axios.post(BACKEND_URL, new URLSearchParams(params).toString());
 
-        this.catalogItems = response.data.results.filter((item) => {
-          return item.parentCategory.includes(categoryId);
-        });
+        this.catalogItems = response.data.results.filter((item) => item.parentCategory.includes(categoryId));
 
-        if (this.catalogItems.length > 0) {
-          const matchedCategory = response.data.results.find(
-            (item) => item.id === categoryId
-          );
-          this.currentCategory = matchedCategory
-            ? matchedCategory.title
-            : "Неизвестная категория";
+        // Поиск названия текущей категории на основе ID категории
+        const category = response.data.results.find((item) => item.parentCategory.includes(categoryId));
+        if (category) {
+          this.currentCategoryTitle = category.title;
+        } else {
+          this.currentCategoryTitle = "Категория не найдена";
         }
       } catch (error) {
         console.error("Ошибка при получении данных:", error);
