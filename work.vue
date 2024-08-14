@@ -146,7 +146,15 @@
 import { ref } from "vue";
 import axios from "axios";
 
-const BACKEND_URL = "https://als-wt/pp/Ext5/extjs_json_collection_data.html";
+const BACKEND_URL = "";
+
+// Предопределенные категории
+const CATEGORIES = [
+  { id: "7207783892693892797", title: "1. Профессиональные навыки" },
+  { id: "7207784069377055908", title: "2. Личная эффективность и развитие" },
+  { id: "7207784147986504834", title: "3. Вводные курсы (инструктажи)" },
+  { id: "7313878051766677160", title: "4. Управление эффективностью деятельности (УЭД)" },
+];
 
 export default {
   setup() {
@@ -180,10 +188,11 @@ export default {
       try {
         const response = await axios.post(BACKEND_URL, new URLSearchParams(params).toString());
 
+        // Фильтруем курсы по идентификатору категории
         this.catalogItems = response.data.results.filter((item) => item.parentCategory.includes(categoryId));
 
-        // Поиск названия текущей категории на основе ID категории
-        const category = response.data.results.find((item) => item.parentCategory.includes(categoryId));
+        // Находим название категории по id
+        const category = CATEGORIES.find((cat) => cat.id === categoryId);
         if (category) {
           this.currentCategoryTitle = category.title;
         } else {
