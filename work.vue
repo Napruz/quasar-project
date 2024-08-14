@@ -1,8 +1,37 @@
-<script>
-import { ref } from "vue";
-import axios from "axios";
+<template>
+  <q-tabs
+    v-model="tab"
+    class="text-primary q-mb-sm"
+    active-color="secondary"
+    align="justify"
+    narrow-indicator
+  >
+    <q-route-tab
+      name="7207783892693892797"
+      label="Профессиональные навыки"
+      :to="{ path: `/content-items/7207783892693892797` }"
+    />
+    <q-route-tab
+      name="7207784069377055908"
+      label="Личная эффективность"
+      :to="{ path: `/content-items/7207784069377055908` }"
+    />
+    <q-route-tab
+      name="7207784147986504834"
+      label="Вводные курсы"
+      :to="{ path: `/content-items/7207784147986504834` }"
+    />
+    <q-route-tab
+      name="7313878051766677160"
+      label="УЭД"
+      :to="{ path: `/content-items/7313878051766677160` }"
+    />
+  </q-tabs>
+</template>
 
-const BACKEND_URL = "";
+<script>
+import { ref, watch } from "vue";
+import axios from "axios";
 
 const CATEGORIES = [
   { id: "7207783892693892797", title: "Профессиональные навыки" },
@@ -29,12 +58,6 @@ export default {
     };
   },
   methods: {
-    toggleListView() {
-      this.isListView = !this.isListView;
-    },
-    toggleBanner(categoryId) {
-      this.activeBanner = this.activeBanner === categoryId ? null : categoryId;
-    },
     async fetchCatalogItemsData() {
       const params = {
         collection_code: "vtbl_quasar_courses_list",
@@ -65,9 +88,21 @@ export default {
       }
     },
   },
+  watch: {
+    // Следим за изменением маршрута и обновляем активную вкладку
+    '$route.params.id'(newId) {
+      this.tab = newId;
+      this.fetchCatalogItemsData();
+    },
+    // Следим за изменением таба и выполняем переход на новый маршрут
+    tab(newTab) {
+      if (newTab !== this.$route.params.id.substring(1)) {
+        this.$router.push({ path: `/content-items/${newTab}` });
+      }
+    }
+  },
   mounted() {
     this.fetchCatalogItemsData();
   },
 };
 </script>
-
