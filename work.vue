@@ -46,19 +46,25 @@
             label-class="text-white"
             expand-icon-class="text-white"
             expand-icon-toggle
-            class="text-white link-text"
+            class="text-white link-text cursor-pointer"
             :model-value="openedItem === category.id"
             @update:model-value="(value) => onItemToggle(category.id, value)"
+            header-class="hover-bg"
           >
             <!-- Заголовок сохраняет стили и поведение -->
             <template v-slot:header>
-              <div 
-                class="row items-center q-gutter-xs cursor-pointer"
-                @click.stop="goToFrame(category.path)"
+              <q-item
+                class="q-pl-lg"
+                active-class="hover-bg"
+                @click="goToFrame(category.path)"
               >
-                <q-icon :name="category.icon" class="text-white" />
-                <span class="text-white">{{ removeNbsp(category.text) }}</span>
-              </div>
+                <q-item-section avatar>
+                  <q-icon :name="category.icon" class="text-white" />
+                </q-item-section>
+                <q-item-section>
+                  <span class="text-white">{{ removeNbsp(category.text) }}</span>
+                </q-item-section>
+              </q-item>
             </template>
 
             <!-- Дочерние элементы -->
@@ -124,5 +130,10 @@ export default {
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Добавляем затемнение при наведении */
+.hover-bg:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 </style>
