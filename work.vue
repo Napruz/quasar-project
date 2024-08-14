@@ -1,36 +1,19 @@
-   <template>
-     <div class="down-button" :class="transformButton(index)">
-       <q-btn
-         flat
-         round
-         color="primary"
-         padding="none"
-         size="md"
-         icon="mdi-chevron-down"
-         @click="
-           currentCategoryIndex.value === index && isBannerVisible.value
-             ? hideBanner()
-             : showBanner(index)
-         "
-       />
-     </div>
-   </template>
+<template>
+  <iframe
+    class="main-frame"
+    :src="frameSrc"  // динамическое значение src
+    scrolling="no"
+  ></iframe>
+</template>
 
-   <script>
-   // ... ваш код ...
- 
-   methods: {
-     // ... ваш код ...
- 
-     showBanner(index) {
-       isBannerVisible.value = true; // Используем `value` для изменения ref
-       currentCategoryIndex.value = index;
-     },
-     
-     hideBanner() {
-       isBannerVisible.value = false; // Используем `value` для изменения ref
-     },
-     // ... ваш код ...
-   }
-   </script>
-   
+<script>
+export default {
+  computed: {
+    frameSrc() {
+      const id = this.$route.params.id;  // получаем id из маршрута
+      return `${id}`;  // используем id для генерации URL
+    }
+  }
+}
+</script>
+
