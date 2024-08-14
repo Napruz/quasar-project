@@ -42,13 +42,17 @@
           <q-expansion-item
             v-for="category in categories"
             :key="category.id"
+            icon-class="text-white"
+            label-class="text-white"
+            expand-icon-class="text-white"
+            expand-icon-toggle
             class="text-white link-text"
             :model-value="openedItem === category.id"
             @update:model-value="(value) => onItemToggle(category.id, value)"
           >
-            <!-- Кликабельный заголовок -->
+            <!-- Заголовок сохраняет стили -->
             <template v-slot:header>
-              <div @click.stop="goToFrame(category.path)">
+              <div class="row items-center" @click.stop="goToFrame(category.path)">
                 <q-icon :name="category.icon" class="text-white q-mr-sm" />
                 <span class="text-white">{{ removeNbsp(category.text) }}</span>
               </div>
@@ -73,11 +77,29 @@
           </q-expansion-item>
 
           <q-separator class="q-my-md" />
-           
+
+          <div class="feedback-container row">
+            <q-item-section avatar class="q-pl-md q-pb-xl">
+              <q-icon
+                name="fa-solid fa-circle-question"
+                class="question-icon text-white"
+              />
+            </q-item-section>
+
+            <div class="column q-ml-xs">
+              <p class="feedback-description text-white q-mb-xs">
+                Нашли ошибку или нужна помощь?
+              </p>
+              <a class="feedback-link" href="#"> Напишите нам </a>
+            </div>
+          </div>
         </q-list>
       </q-scroll-area>
     </q-drawer>
 
+    <q-page-container>
+      <router-view />
+    </q-page-container>
   </q-layout>
 </template>
 
@@ -88,6 +110,9 @@ export default {
     goToFrame(id) {
       const encodedId = encodeURIComponent(id);
       this.$router.push(`/frame/${encodedId}`);
+    },
+    removeNbsp(text) {
+      return text.replace(/&nbsp;/g, " ");
     }
   }
 };
