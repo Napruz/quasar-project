@@ -50,10 +50,13 @@
             :model-value="openedItem === category.id"
             @update:model-value="(value) => onItemToggle(category.id, value)"
           >
-            <!-- Заголовок сохраняет стили -->
+            <!-- Заголовок сохраняет стили и поведение -->
             <template v-slot:header>
-              <div class="row items-center" @click.stop="goToFrame(category.path)">
-                <q-icon :name="category.icon" class="text-white q-mr-sm" />
+              <div 
+                class="row items-center q-gutter-xs cursor-pointer"
+                @click.stop="goToFrame(category.path)"
+              >
+                <q-icon :name="category.icon" class="text-white" />
                 <span class="text-white">{{ removeNbsp(category.text) }}</span>
               </div>
             </template>
@@ -117,3 +120,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
