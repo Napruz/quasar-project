@@ -19,11 +19,7 @@
                 class="button-logo q-pa-xs"
                 :to="{ path: '/' }"
               >
-                <q-img
-                  class="vtbl-logo rounded-borders"
-                  src="icons/vtbl-logo.png"
-                  alt="Логотип компании"
-                />
+                
               </q-btn>
 
               <q-btn
