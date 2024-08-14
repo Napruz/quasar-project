@@ -19,7 +19,11 @@
                 class="button-logo q-pa-xs"
                 :to="{ path: '/' }"
               >
-                
+                <q-img
+                  class="vtbl-logo rounded-borders"
+                  src="icons/vtbl-logo.png"
+                  alt="Логотип компании"
+                />
               </q-btn>
 
               <q-btn
@@ -38,19 +42,19 @@
           <q-expansion-item
             v-for="category in categories"
             :key="category.id"
-            :icon="category.icon"
-            :label="removeNbsp(category.text)"
             class="text-white link-text"
-            label-class="text-white"
-            icon-class="text-white"
-            expand-icon-class="text-white"
-            expand-icon-toggle
-            expand-separator
-            :hide-expand-icon="false"
             :model-value="openedItem === category.id"
             @update:model-value="(value) => onItemToggle(category.id, value)"
-            @click.native.stop="goToFrame(category.path)" <!-- Используем событие native с stopPropagation -->
           >
+            <!-- Кликабельный заголовок -->
+            <template v-slot:header>
+              <div @click.stop="goToFrame(category.path)">
+                <q-icon :name="category.icon" class="text-white q-mr-sm" />
+                <span class="text-white">{{ removeNbsp(category.text) }}</span>
+              </div>
+            </template>
+
+            <!-- Дочерние элементы -->
             <q-item
               v-for="link in getChildLinks(category.id)"
               :key="link.id"
@@ -60,40 +64,20 @@
               class="q-pl-lg"
             >
               <q-item-section avatar>
-                <q-icon
-                  :name="link.icon"
-                  class="text-white q-pa-none" />
+                <q-icon :name="link.icon" class="text-white q-pa-none" />
               </q-item-section>
               <q-item-section class="text-white link-text">
-                {{link.text}}
+                {{ link.text }}
               </q-item-section>
             </q-item>
           </q-expansion-item>
 
           <q-separator class="q-my-md" />
-
-          <div class="feedback-container row">
-            <q-item-section avatar class="q-pl-md q-pb-xl">
-              <q-icon
-                name="fa-solid fa-circle-question"
-                class="question-icon text-white"
-              />
-            </q-item-section>
-
-            <div class="column q-ml-xs">
-              <p class="feedback-description text-white q-mb-xs">
-                Нашли ошибку или нужна помощь?
-              </p>
-              <a class="feedback-link" href="#"> Напишите нам </a>
-            </div>
-          </div>
+           
         </q-list>
       </q-scroll-area>
     </q-drawer>
 
-    <q-page-container>
-      <router-view />
-    </q-page-container>
   </q-layout>
 </template>
 
