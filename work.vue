@@ -1,91 +1,5 @@
-<template>
-  <div class="main-container row justify-between">
-    <div class="content-container">
-      <div class="breadcrumbs q-ml-xl q-mt-sm q-gutter-sm row justify-between">
-        <q-breadcrumbs class="q-mt-lg g-ml-lg text-primary">
-          <q-breadcrumbs-el label="Учебный центр" :to="{ path: '/' }" />
-          <q-breadcrumbs-el label="Каталог курсов" :to="{ path: '/content' }" />
-          <q-breadcrumbs-el :label="currentCategoryTitle" />
-        </q-breadcrumbs>
-      </div>
-
-      <div class="container row">
-        <div class="column items-start q-pl-sm q-ml-xl q-mt-sm">
-          <div class="header-container">
-            <p
-              class="text-3 text-weight-regular text-uppercase text-primary text-weight-bold"
-              style="font-size: 25px"
-            >
-              {{ currentCategoryTitle }}
-            </p>
-          </div>
-
-          <div class="tab-panel q-gutter-y-md" style="width: 100%">
-            <div class="tabs row">
-              <q-tabs
-                v-model="tab"
-                class="text-primary q-mb-sm"
-                active-color="secondary"
-                align="justify"
-                narrow-indicator
-              >
-                <q-route-tab
-                  name="7207783892693892797"
-                  label="Профессиональные навыки"
-                  @click="reloadPage(':7207783892693892797')"
-                />
-                <q-route-tab
-                  name="7207784069377055908"
-                  label="Личная эффективность"
-                  @click="reloadPage(':7207784069377055908')"
-                />
-                <q-route-tab
-                  name="7207784147986504834"
-                  label="Вводные курсы"
-                  @click="reloadPage(':7207784147986504834')"
-                />
-                <q-route-tab
-                  name="7313878051766677160"
-                  label="УЭД"
-                  @click="reloadPage(':7313878051766677160')"
-                />
-              </q-tabs>
-
-              <q-btn-toggle
-                v-model="currentView"
-                class="my-custom-toggle q-ml-lg"
-                unelevated
-                toggle-color="primary"
-                color="white"
-                text-color="primary"
-                size="md"
-                :options="[
-                  { icon: 'mdi-format-list-bulleted', value: 'isListView' },
-                  { icon: 'mdi-format-list-text', value: 'isFullListView' },
-                  { icon: 'mdi-apps', value: 'listCardView' },
-                ]"
-              />
-            </div>
-          </div>
-
-          <div v-if="currentView === 'isListView'" class="list">
-            <!-- Ваша логика для isListView -->
-          </div>
-
-          <div v-else-if="currentView === 'isFullListView'" class="list">
-            <!-- Ваша логика для isFullListView -->
-          </div>
-
-          <div v-else class="list-card">
-            <!-- Ваша логика для listCardView -->
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 
 const BACKEND_URL = "https://als-wt/pp/Ext5/extjs_json_collection_data.html";
@@ -173,10 +87,25 @@ export default {
         console.error("Ошибка при получении данных:", error);
       }
     },
+    // Сохраняем текущий вид в localStorage
+    saveViewToLocalStorage() {
+      localStorage.setItem('selectedView', this.currentView);
+    },
   },
   mounted() {
+    // Получаем сохраненный вид из localStorage или используем isListView по умолчанию
+    const savedView = localStorage.getItem('selectedView');
+    if (savedView) {
+      this.currentView = savedView;
+    }
+
     this.fetchCatalogItemsData();
   },
+  watch: {
+    // Следим за изменением currentView и сохраняем новое значение
+    currentView(newView) {
+      this.saveViewToLocalStorage();
+    }
+  }
 };
 </script>
-
