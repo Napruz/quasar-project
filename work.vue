@@ -1,44 +1,40 @@
-async fetchCatalogItemsData() {
-  const params = {
-    collection_code: "vtbl_quasar_courses_list",
-  };
-  const categoryId = this.$route.params.id.substring(1);
+<template>
+  <iframe
+    class="main-frame"
+    :src="frameSrc"
+    scrolling="no"
+    @load="clearFrame" <!-- Привязка события загрузки -->
+  ></iframe>
+</template>
 
-  try {
-    const response = await axios.post(
-      BACKEND_URL,
-      new URLSearchParams(params).toString()
-    );
-
-    // Инициализируем массив для хранения отфильтрованных курсов
-    let filteredCourses = [];
-
-    // Перебираем все курсы
-    response.data.results.forEach((item) => {
-      // Проверяем, содержит ли массив parentCategory текущий categoryId
-      if (item.parentCategory.includes(categoryId)) {
-        filteredCourses.push(item);
-      }
-    });
-
-    // Удаляем дублирующиеся курсы, если они существуют
-    this.catalogItems = filteredCourses.filter((item, index, self) => 
-      index === self.findIndex((t) => (
-        t.id === item.id
-      ))
-    );
-
-    // Находим название категории по id
-    const category = CATEGORIES.find((cat) => cat.id === categoryId);
-
-    if (category) {
-      this.currentCategoryTitle = category.title;
-      this.tab = categoryId; // Устанавливаем активную вкладку на основе категории
-    } else {
-      this.currentCategoryTitle = "Категория не найдена";
+<script>
+export default {
+  computed: {
+    frameSrc() {
+      const encodedId = this.$route.params.id;  // получаем закодированный id из маршрута
+      const id = decodeURIComponent(encodedId);  // декодируем его обратно в оригинальный URL
+      return id;  // используем декодированный URL для генерации src
     }
+  },
+  methods: {
+    clearFrame() {
+      const iframe = document.getElementsByClassName('main-frame')[0];  // Получаем iframe
+      const contentDocument = iframe.contentDocument || iframe.contentWindow.document;  // Получаем документ внутри iframe
 
-  } catch (error) {
-    console.error("Ошибка при получении данных:", error);
+      if (contentDocument) {
+        // Убираем отступы и скрываем шапку
+        const page = contentDocument.getElementsByClassName('page')[0];
+        const header = contentDocument.getElementsByClassName('header')[0];
+
+        if (page) {
+          page.setAttribute('style', 'padding-top:0px');
+        }
+
+        if (header) {
+          header.setAttribute('style', 'display:none');
+        }
+      }
+    }
   }
-},
+}
+</script>
