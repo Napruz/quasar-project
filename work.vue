@@ -1,115 +1,167 @@
+<template>
+  <q-expansion-item
+    v-for="category in categories"
+    :key="category.id"
+    :icon="category.icon"
+    icon-class="text-white"
+    label-class="text-white"
+    expand-icon-class="text-white"
+    expand-icon-toggle
+    class="text-white link-text"
+    :model-value="openedItem === category.id"
+    :hide-expand-icon="!hasChildLinks(category.id)"
+    @update:model-value="(value) => onItemToggle(category.id, value)"
+  >
+    <!-- Заголовок сохраняет стили и поведение -->
+    <template v-slot:header>
+      <div
+        class="row items-center q-gutter-md cursor-pointer q-expansion-item-header"
+        style="margin-right: auto;"
+        @click.stop="goToFrame(category.path)"
+      >
+        <q-icon :name="category.icon" class="text-white" />
+        <span class="text-white">{{ removeNbsp(category.text) }}</span>
+      </div>
+    </template>
+
+    <!-- Дочерние элементы -->
+    <q-item
+      v-for="link in getChildLinks(category.id)"
+      :key="link.id"
+      clickable
+      v-ripple
+      @click="goToFrame(link.path)"
+      class="q-pl-lg"
+    >
+      <q-item-section avatar>
+        <q-icon :name="link.icon" class="text-white q-pa-none" />
+      </q-item-section>
+      <q-item-section class="text-white link-text">
+        {{ link.text }}
+      </q-item-section>
+    </q-item>
+  </q-expansion-item>
+</template>
+
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 
-const BACKEND_URL = "";
-
-// Предопределенные категории
-const CATEGORIES = [
-  
-
 export default {
+  name: "MyLayout",
   setup() {
-    return {
-      tab: ref(""),
-      currentCategoryTitle: ref(""),
+    const leftDrawerOpen = ref(false);
+    const search = ref("");
+    const router = useRouter();
+    const openedItem = ref("");
+    const userArray = ref([]);
+    const menuLinks = ref([]); // весь ответ от сервера
+    const categories = ref([]); // Заголовки вкладок
+
+    const BACKEND_URL =
+      "https://als-wt/pp/Ext5/extjs_json_collection_data.html";
+
+    const fetchMenuLinks = async () => {
+      try {
+        const collection_code = "vtbl_quasar_main_menu";
+        const url = BACKEND_URL;
+        const params = { collection_code: collection_code };
+        const response = await axios.post(
+          url,
+          new URLSearchParams(params).toString()
+        );
+        menuLinks.value = response.data.results;
+        categories.value = response.data.results.filter(
+          (link) => link.parent_id === ""
+        );
+      } catch (error) {
+        console.error("Ошибка загрузки меню", error);
+      }
     };
-  },
-  data() {
+
+    const fetchUsersInfo = async () => {
+      try {
+        const url = BACKEND_URL;
+        const params = { collection_code: "vtbl_quasar_user_data" };
+        const response = await axios.post(
+          url,
+          new URLSearchParams(params).toString()
+        );
+        userArray.value = response.data.results[0];
+      } catch (error) {
+        console.error("Ошибка загрузки данных сотрудника", error);
+      }
+    };
+
+    onMounted(() => {
+      fetchMenuLinks();
+      fetchUsersInfo();
+    });
+
+    const getChildLinks = (id) => {
+      return menuLinks.value.filter((link) => link.parent_id === id);
+    };
+
+    const hasChildLinks = (id) => {
+      return getChildLinks(id).length > 0;
+    };
+
+    function toggleLeftDrawer() {
+      leftDrawerOpen.value = !leftDrawerOpen.value;
+    }
+
+    function navigate(path) {
+      window.location.href = path;
+    }
+
+    function removeNbsp(text) {
+      if (text.includes("&nbsp;")) {
+        return text.replace(/&nbsp;/g, " ");
+      } else {
+        return text;
+      }
+    }
+
+    function onItemToggle(item, value) {
+      if (value) {
+        openedItem.value = item;
+      } else {
+        openedItem.value = "";
+      }
+    }
+
     return {
-      currentView: 'listCardView', // По умолчанию listCardView
-      catalogItems: [],
-      activeBanner: null,
+      leftDrawerOpen,
+      search,
+      toggleLeftDrawer,
+      navigate,
+      openedItem,
+      onItemToggle,
+      getChildLinks,
+      removeNbsp,
+      hasChildLinks,
     };
   },
   methods: {
-    toggleListView(viewType) {
-      this.currentView = viewType; // Обновляем текущий вид
-      this.saveViewToSessionStorage(); // Сохраняем выбор в sessionStorage
-    },
-
-    toggleBanner(categoryId) {
-      this.activeBanner = this.activeBanner === categoryId ? null : categoryId;
-    },
-
-    reloadPage(tabId) {
-      this.tab = tabId; // Обновляем значение активной вкладки
-      const path = `/content-items/${tabId}`;
-
-      // Осуществляем переход на новый маршрут
-      this.$router.push(path).then(() => {
-        // После успешного перехода перезагружаем страницу
-        window.location.reload();
-      }).catch(err => {
-        console.error("Error navigating to tab:", err);
-      });
-    },
-
-    // Запрос на сервер
-    async fetchCatalogItemsData() {
-      const params = {
-        collection_code: "vtbl_quasar_courses_list",
-      };
-      const categoryId = this.$route.params.id.substring(1);
-
-      try {
-        const response = await axios.post(
-          BACKEND_URL,
-          new URLSearchParams(params).toString()
-        );
-
-        // Инициализируем массив для хранения отфильтрованных курсов
-        let filteredCourses = [];
-
-        // Перебираем все курсы
-        response.data.results.forEach((item) => {
-          // Проверяем, содержит ли массив parentCategory текущий categoryId
-          if (item.parentCategory.includes(categoryId)) {
-            filteredCourses.push(item);
-          }
-        });
-
-        // Удаляем дублирующиеся курсы, если они существуют
-        this.catalogItems = filteredCourses.filter((item, index, self) =>
-          index === self.findIndex((t) => (
-            t.id === item.id
-          ))
-        );
-
-        // Находим название категории по id
-        const category = CATEGORIES.find((cat) => cat.id === categoryId);
-
-        if (category) {
-          this.currentCategoryTitle = category.title;
-          this.tab = categoryId; // Устанавливаем активную вкладку на основе категории
-        } else {
-          this.currentCategoryTitle = "Категория не найдена";
-        }
-
-      } catch (error) {
-        console.error("Ошибка при получении данных:", error);
+    goToFrame(id) {
+      if (id == "https://portal/") {
+        window.location.href = id;
+      } else {
+        const encodedId = encodeURIComponent(id);
+        this.$router.push(`/frame/${encodedId}`);
       }
     },
-
-    saveViewToSessionStorage() {
-      sessionStorage.setItem('contentView', this.currentView); // Сохраняем текущий вид в sessionStorage
-    },
-
-    loadViewFromSessionStorage() {
-      const savedView = sessionStorage.getItem('contentView');
-      if (savedView) {
-        this.currentView = savedView; // Восстанавливаем вид из sessionStorage
-      }
-    }
-  },
-
-  created() {
-    this.loadViewFromSessionStorage(); // Загружаем выбранный вид при создании компонента
-  },
-
-  mounted() {
-    this.fetchCatalogItemsData();
   },
 };
 </script>
 
+<style>
+.q-expansion-item-header {
+  transition: background-color 0.3s;
+}
+
+.q-expansion-item-header:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Пример светлой подсветки при наведении */
+}
+</style>
