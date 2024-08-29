@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
@@ -92,27 +92,30 @@ export default {
       }
     };
 
-    onMounted(() => {
-      fetchMenuLinks();
-      fetchUsersInfo();
+    onMounted(async () => {
+      await fetchMenuLinks();
+      await fetchUsersInfo();
 
-      // Ожидаем полной загрузки страницы
-      setTimeout(() => {
-        // Находим все элементы с role="listitem"
-        const listItemElements = document.querySelectorAll('[role="listitem"]');
-        
-        listItemElements.forEach((element) => {
-          // Добавляем обработчик для hover эффекта
-          element.addEventListener('mouseenter', () => {
-            element.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-          });
+      // Ждем обновления DOM с помощью nextTick
+      await nextTick();
 
-          // Убираем эффект при уходе курсора
-          element.addEventListener('mouseleave', () => {
-            element.style.backgroundColor = ''; // Убираем цвет фона
-          });
+      // Находим все элементы с role="listitem"
+      const listItemElements = document.querySelectorAll('[role="listitem"]');
+      console.log(listItemElements);
+
+      listItemElements.forEach((element) => {
+        // Добавляем обработчик для hover эффекта
+        element.addEventListener('mouseenter', () => {
+          element.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+          console.log("mouse enter");
         });
-      }, 0); // Задержка в 0ms позволит дождаться полной загрузки DOM
+
+        // Убираем эффект при уходе курсора
+        element.addEventListener('mouseleave', () => {
+          element.style.backgroundColor = ''; // Убираем цвет фона
+          console.log("mouse leave");
+        });
+      });
     });
 
     const getChildLinks = (id) => {
@@ -171,4 +174,3 @@ export default {
   },
 };
 </script>
-
