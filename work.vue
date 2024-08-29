@@ -7,7 +7,7 @@
     label-class="text-white"
     expand-icon-class="text-white"
     expand-icon-toggle
-    class="text-white link-text"
+    class="text-white link-text hoverable-expansion-item"
     :model-value="openedItem === category.id"
     :hide-expand-icon="!hasChildLinks(category.id)"
     @update:model-value="(value) => onItemToggle(category.id, value)"
@@ -15,7 +15,7 @@
     <!-- Заголовок сохраняет стили и поведение -->
     <template v-slot:header>
       <div
-        class="row items-center q-gutter-md cursor-pointer"
+        class="row items-center q-gutter-md cursor-pointer hoverable-header"
         style="margin-right: auto;"
         @click.stop="goToFrame(category.path)"
       >
@@ -43,19 +43,136 @@
   </q-expansion-item>
 </template>
 
-<style>
-/* Добавляем эффект hover для родительского элемента с ролью listitem */
-.q-item[role="listitem"] {
+<script>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+
+export default {
+  name: "MyLayout",
+  setup() {
+    const leftDrawerOpen = ref(false);
+    const search = ref("");
+    const router = useRouter();
+    const openedItem = ref("");
+    const userArray = ref([]);
+    const menuLinks = ref([]);
+    const categories = ref([]);
+
+    const BACKEND_URL = "https://als-wt/pp/Ext5/extjs_json_collection_data.html";
+
+    const fetchMenuLinks = async () => {
+      try {
+        const collection_code = "vtbl_quasar_main_menu";
+        const url = BACKEND_URL;
+        const params = { collection_code: collection_code };
+        const response = await axios.post(
+          url,
+          new URLSearchParams(params).toString()
+        );
+        menuLinks.value = response.data.results;
+        categories.value = response.data.results.filter(
+          (link) => link.parent_id === ""
+        );
+      } catch (error) {
+        console.error("Ошибка загрузки меню", error);
+      }
+    };
+
+    const fetchUsersInfo = async () => {
+      try {
+        const url = BACKEND_URL;
+        const params = { collection_code: "vtbl_quasar_user_data" };
+        const response = await axios.post(
+          url,
+          new URLSearchParams(params).toString()
+        );
+        userArray.value = response.data.results[0];
+      } catch (error) {
+        console.error("Ошибка загрузки данных сотрудника", error);
+      }
+    };
+
+    onMounted(() => {
+      fetchMenuLinks();
+      fetchUsersInfo();
+    });
+
+    const getChildLinks = (id) => {
+      return menuLinks.value.filter((link) => link.parent_id === id);
+    };
+
+    const hasChildLinks = (id) => {
+      return getChildLinks(id).length > 0;
+    };
+
+    function toggleLeftDrawer() {
+      leftDrawerOpen.value = !leftDrawerOpen.value;
+    }
+
+    function navigate(path) {
+      window.location.href = path;
+    }
+
+    function removeNbsp(text) {
+      if (text.includes("&nbsp;")) {
+        return text.replace(/&nbsp;/g, " ");
+      } else {
+        return text;
+      }
+    }
+
+    function onItemToggle(item, value) {
+      if (value) {
+        openedItem.value = item;
+      } else {
+        openedItem.value = "";
+      }
+    }
+
+    return {
+      leftDrawerOpen,
+      search,
+      toggleLeftDrawer,
+      navigate,
+      openedItem,
+      onItemToggle,
+      getChildLinks,
+      removeNbsp,
+      hasChildLinks,
+    };
+  },
+  methods: {
+    goToFrame(id) {
+      if (id == "https://portal/") {
+        window.location.href = id;
+      } else {
+        const encodedId = encodeURIComponent(id);
+        this.$router.push(`/frame/${encodedId}`);
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+/* Стили для q-expansion-item */
+.hoverable-expansion-item .q-item {
   transition: background-color 0.3s;
 }
 
-.q-item[role="listitem"]:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Цвет фона при наведении */
+/* Стили для hover */
+.hoverable-expansion-item .q-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Если необходимо учитывать активный элемент */
-.q-item[role="listitem"].q-item--active {
-  background-color: rgba(255, 255, 255, 0.2); /* Цвет фона для активного элемента */
+/* Стили для header внутри q-expansion-item */
+.hoverable-header {
+  transition: background-color 0.3s;
+}
+
+.hoverable-header:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Пример подсветки при наведении */
 }
 </style>
 
