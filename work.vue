@@ -1,20 +1,29 @@
 function shortenString(inputString) {
-  // Разделяем строку на слова
-  const words = inputString.split(' ');
+  // Регулярное выражение: ищет текст в скобках
+  const regex = /\(([^)]+)\)/;
+  const match = inputString.match(regex);
 
-  // Проверяем, есть ли в строке сокращение в скобках
-  const abbreviation = words.find(word => word.startsWith('(') && word.endsWith(')'));
-
-  // Если сокращение найдено, возвращаем его
-  if (abbreviation) {
-    return abbreviation.slice(1, -1); // Удаляем скобки
+  // Если сокращение найдено
+  if (match) {
+    // Разделяем строку по пробелам и проверяем, есть ли слово "ВВОДНЫЕ" 
+    const words = inputString.split(' ');
+    if (words.includes("ВВОДНЫЕ")) {
+      return inputString.split('(')[0].trim(); // Возвращаем строку до открывающей скобки
+    } else {
+      return match[1]; // Возвращаем найденное сокращение
+    }
   } else {
-    // Если сокращения нет, возвращаем исходную строку
+    // Если сокращения не найдено
     return inputString;
   }
 }
 
 // Пример использования
-const originalString = "УПРАВЛЕНИЕ ЭФФЕКТИВНОСТЬЮ ДЕЯТЕЛЬНОСТИ (УЭД)";
-const shortenedString = shortenString(originalString);
-console.log(shortenedString); // Вывод: УЭД
+const originalString1 = "УПРАВЛЕНИЕ ЭФФЕКТИВНОСТЬЮ ДЕЯТЕЛЬНОСТИ (УЭД)";
+const originalString2 = "ВВОДНЫЕ КУРСЫ (ИНСТРУКТАЖИ)";
+
+const shortenedString1 = shortenString(originalString1);
+const shortenedString2 = shortenString(originalString2);
+
+console.log(shortenedString1); // Вывод: УЭД
+console.log(shortenedString2); // Вывод: ВВОДНЫЕ КУРСЫ
