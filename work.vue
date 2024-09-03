@@ -1,13 +1,15 @@
 function shortenString(inputString) {
-  // Регулярное выражение: ищет текст в скобках
-  const regex = /\(([^)]+)\)/;
-  const match = inputString.match(regex);
+  // Разделяем строку на слова
+  const words = inputString.split(' ');
 
-  // Если сокращение найдено
-  if (match) {
-    return match[1]; // Возвращает найденное сокращение
+  // Проверяем, есть ли в строке сокращение в скобках
+  const abbreviation = words.find(word => word.startsWith('(') && word.endsWith(')'));
+
+  // Если сокращение найдено, возвращаем его
+  if (abbreviation) {
+    return abbreviation.slice(1, -1); // Удаляем скобки
   } else {
-    // Если сокращения не найдено
+    // Если сокращения нет, возвращаем исходную строку
     return inputString;
   }
 }
