@@ -8,7 +8,7 @@ function shortenString(inputString) {
     // Разделяем строку по пробелам и проверяем, есть ли слово "ВВОДНЫЕ" 
     const words = inputString.split(' ');
     if (words.includes("ВВОДНЫЕ")) {
-      return inputString.split('(')[0].trim(); // Возвращаем строку до открывающей скобки
+      return words.slice(0, words.indexOf('(')).join(' '); // Возвращаем слова до скобки
     } else {
       return match[1]; // Возвращаем найденное сокращение
     }
