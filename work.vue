@@ -1,22 +1,15 @@
-<!-- CatalogItems.vue -->
+<!-- CatalogPage.vue -->
 <template>
   <div class="main-container row justify-between">
     <div class="content-container">
-      <div class="container row">
-        <div class="column items-start q-pl-sm q-ml-xl q-mt-sm">
-          <div class="tabs row">
-            <q-tabs v-model="tab" class="text-primary q-mb-sm wrap" active-color="secondary" align="justify" narrow-indicator>
-              <q-route-tab
-                v-for="category in categories"
-                :key="category.id"
-                :name="category.id"
-                :label="shortenString(category.title)"
-                @click="selectCategory(category.id)" <!-- Передаем ID категории при клике -->
-                class="tab-item"
-              />
-            </q-tabs>
-          </div>
-        </div>
+      <div class="new-card">
+        <q-card class="my-card">
+          <q-img class="card-header-bg-image" src="images/card-header-panel.png">
+            <div v-if="category.state === 'inProgress'" class="course-state in-progress">
+              <q-img src="icons/in-progress-state.svg" />
+            </div>
+          </q-img>
+        </q-card>
       </div>
     </div>
   </div>
@@ -24,25 +17,37 @@
 
 <script>
 import { useCategoryStore } from '@/store/categoryid';
+import axios from 'axios';
 
 export default {
   data() {
     return {
-      tab: null, // Активная вкладка
-      categories: [] // Данные категорий
+      category: {}, // Данные курса
+      courses: [] // Курсы в категории
     };
   },
   methods: {
-    selectCategory(categoryId) {
-      const categoryStore = useCategoryStore();
-      categoryStore.setCategoryId(categoryId); // Обновляем ID категории в хранилище
-    },
-    fetchCategoriesData() {
-      // Логика для получения категорий
-    },
+    fetchCourseData() {
+      const categoryStore = useCategoryStore(); // Получаем доступ к хранилищу
+      const categoryId = categoryStore.currentCategoryId; // Получаем ID категории
+
+      // Выполняем запрос с использованием полученного ID
+      const params = {
+        collection_code: 'vtbl_quasar_courses_list',
+        parameters: `category_id=${categoryId}`,
+      };
+
+      axios.post('https://als-wt/pp/Ext5/extjs_json_collection_data.html', new URLSearchParams(params).toString())
+        .then(response => {
+          this.courses = response.data.results;
+        })
+        .catch(error => {
+          console.error('Ошибка загрузки данных курса:', error);
+        });
+    }
   },
   mounted() {
-    this.fetchCategoriesData(); // Получаем данные при монтировании компонента
+    this.fetchCourseData(); // Получаем данные при монтировании
   }
 };
 </script>
