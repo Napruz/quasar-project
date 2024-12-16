@@ -1,112 +1,153 @@
 <template>
-  <q-card class="my-card q-mt-md">
-    <!-- Заголовки табов -->
-    <div
-      class="small-card-titles row"
-      style="justify-content: space-evenly; background-color: #0d2a7d"
+  <div class="event-page">
+    <!-- Заголовок мероприятия -->
+    <p
+      class="header-content-title text-3 text-weight-regular text-uppercase text-white text-weight-bold"
     >
+      {{ eventData.eventName }}
+    </p>
+
+    <!-- Даты мероприятия -->
+    <div class="event-dates row" style="margin-bottom: 10px">
       <p
-        class="small-card-title materials-title"
-        :class="{ 'current-title': activeTab === 'materials' }"
-        style="width: 50%; cursor: pointer"
-        @click="activeTab = 'materials'"
+        class="header-content-description event-date-start"
+        style="margin-right: 5px"
       >
-        Материалы
+        {{ eventData.eventDates.split(' - ')[0] }}
       </p>
+      <p class="header-content-description">-</p>
       <p
-        class="small-card-title members-title"
-        :class="{ 'current-title': activeTab === 'members' }"
-        style="width: 50%; cursor: pointer"
-        @click="activeTab = 'members'"
+        class="header-content-description event-date-finish"
+        style="margin-left: 5px"
       >
-        Участники
+        {{ eventData.eventDates.split(' - ')[1] }}
       </p>
     </div>
 
-    <!-- Контент для вкладки Материалы -->
-    <div v-if="activeTab === 'materials'" class="small-card-info materials-card column">
-      <ul class="card-info-list">
-        <li class="card-info-item">
-          <a href="#" download class="attempts-link">Материалы</a>
-        </li>
-        <li class="card-info-item">
-          <a href="#" download class="attempts-link">Программа тренинга</a>
-        </li>
-        <li class="card-info-item">
-          <a href="#" download class="attempts-link">Дополнительно</a>
-        </li>
-      </ul>
+    <!-- Свободные места -->
+    <div class="members-count row">
+      <p class="members-item column">
+        Свободных мест
+        <span style="margin: 0 auto"> {{ eventData.avialableMembers }} </span>
+      </p>
     </div>
 
-    <!-- Контент для вкладки Участники -->
+    <!-- Формат и место проведения -->
+    <div class="event-details row">
+      <div class="date-finish column q-mr-xl">
+        <div class="date-finish-content">
+          <p class="main-date-finish-title text-black q-mb-sm">
+            Формат проведения
+          </p>
+        </div>
+        <div class="date-finish-item">
+          <p class="date-finish-title text-grey">
+            {{ eventData.externalStatus ? "Внешнее обучение" : "Очное мероприятие" }}
+          </p>
+        </div>
+      </div>
+
+      <div class="date-finish column q-mr-xl">
+        <div class="date-finish-content">
+          <p class="main-date-finish-title text-black q-mb-sm">
+            Место проведения
+          </p>
+        </div>
+        <div class="date-finish-item">
+          <p class="date-finish-title text-grey">{{ eventData.locationEvent }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ответственные лица -->
+    <div class="event-manager row">
+      <div class="event-manager-container">
+        <p class="education-centre-name text-black q-mb-sm">
+          Ответственные за проведение:
+        </p>
+      </div>
+      <div class="event-manager-name">
+        <a v-for="member in eventData.members" :key="member.id" :href="'mailto:' + member.email">
+          {{ member.fullname }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Участники -->
     <div v-if="activeTab === 'members'" class="small-card-info members-card column">
       <ul class="card-info-list">
-        <li class="card-info-item">
+        <li v-for="member in eventData.members" :key="member.id" class="card-info-item">
           <q-img
             class="rounded-borders card-image member-photo"
             style="max-width: 100px; max-height: 100px"
-            src="../images/aleksandra.png"
+            :src="member.photo || '../images/person-default.png'"
             alt="Фото участника"
           />
           <p class="member-name-info">
-            Иванов Иван Иванович <br />
-            Директор <br />
-            ОП Воркута
-          </p>
-        </li>
-        <li class="card-info-item">
-          <q-img
-            style="max-width: 100px; max-height: 100px"
-            class="rounded-borders card-image member-photo"
-            src="../images/default-avatar.png"
-            alt="Фото участника"
-          />
-          <p class="member-name-info">
-            Иванов Иван Сергеевич <br />
-            Директор <br />
-            ОП Тверь
-          </p>
-        </li>
-        <li class="card-info-item">
-          <q-img
-            style="max-width: 100px; max-height: 100px"
-            class="rounded-borders card-image member-photo"
-            src="../images/madina.png"
-            alt="Фото участника"
-          />
-          <p class="member-name-info">
-            Иванов Иван Сергеевич <br />
-            Директор <br />
-            ОП Тула
+            {{ member.fullname }} <br />
+            {{ member.position || 'Должность не указана' }} <br />
+            {{ member.department || 'Отдел не указан' }}
           </p>
         </li>
       </ul>
     </div>
-  </q-card>
+
+    <!-- Основные темы и цели -->
+    <p class="main-purpose-description text-black q-mb-md ellipsis-2-lines">
+      {{ eventData.competency || "Информация отсутствует" }}
+    </p>
+
+    <ul class="courses-themes-list">
+      <li v-for="theme in eventData.materials" :key="theme.id" class="list-item">
+        <div class="themes-arrow-items row">
+          <div class="q-ml-xs">
+            <p class="main-themes-description text-black q-mb-xs">
+              {{ theme }}
+            </p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Стоимость обучения и обучающая организация -->
+    <div v-if="eventData.educationCompany" class="competency column q-mr-xl">
+      <div class="competency-content">
+        <p class="main-purpose-title text-black q-mb-sm">
+          Обучающая организация
+        </p>
+      </div>
+      <div class="competency">
+        <p class="competency-title text-grey">
+          {{ eventData.educationCompany }}
+        </p>
+      </div>
+    </div>
+
+    <div v-if="eventData.educationPrice" class="competency column q-mr-xl">
+      <div class="competency-content">
+        <p class="main-purpose-title text-black q-mb-sm">
+          Стоимость обучения
+        </p>
+      </div>
+      <div class="competency">
+        <p class="competency-title text-grey">
+          {{ eventData.educationPrice }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Кнопки управления -->
+    <div class="course-buttons row justify-between">
+      <q-btn
+        v-for="button in eventData.buttons"
+        :key="button.label"
+        :label="button.label"
+        :icon="button.icon"
+        class="course-button-item text-white"
+        size="15px"
+        glossy
+        @click="button.action"
+      />
+    </div>
+  </div>
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      activeTab: 'members', // Начальная активная вкладка
-    };
-  },
-};
-</script>
-.current-title {
-  color: #ffffff;
-  font-weight: bold;
-  border-bottom: 2px solid #ffffff; /* Подчеркивание для активной вкладки */
-}
-
-.small-card-title {
-  text-align: center;
-  padding: 10px 0;
-  color: #b0b0b0; /* Цвет неактивных табов */
-  transition: color 0.3s ease, border-bottom 0.3s ease;
-}
-
-.small-card-title:hover {
-  color: #ffffff; /* Цвет при наведении */
-}
