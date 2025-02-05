@@ -20,19 +20,17 @@
 </template>
 
 <script>
-import { ref } from "vue";
-
 export default {
-  setup() {
-    const tasks = ref([
-      { id: 1, text: "Я принял участие во встрече с руководителем" },
-      { id: 2, text: "Я познакомился с командой" },
-      { id: 3, text: "Получил задачи на испытательный срок" },
-    ]);
-
-    const toggleValues = ref({});
-
-    return { tasks, toggleValues };
+  data() {
+    return {
+      tasks: [
+        { id: 1, text: "Я принял участие во встрече с руководителем" },
+        { id: 2, text: "Я познакомился с командой" },
+        { id: 3, text: "Получил задачи на испытательный срок" },
+      ],
+      toggleValues: {},
+    };
   },
 };
 </script>
+
