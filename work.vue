@@ -29,40 +29,40 @@
 </template>
 
 <script>
-import { ref } from "vue";
-
 export default {
-  setup() {
-    const comments = ref([
-      {
-        id: 1,
-        avatar: "https://via.placeholder.com/40",
-        role: "Менеджер",
-        department: "Отдел продаж",
-        phone: "+7 (999) 123-45-67",
-        email: "user@example.com",
-        text: "Отличный курс, всем рекомендую!",
+  data() {
+    return {
+      comments: [
+        {
+          id: 1,
+          avatar: "https://via.placeholder.com/40",
+          role: "Менеджер",
+          department: "Отдел продаж",
+          phone: "+7 (999) 123-45-67",
+          email: "user@example.com",
+          text: "Отличный курс, всем рекомендую!",
+        },
+      ],
+      newComment: {
+        text: "",
       },
-    ]);
-
-    const newComment = ref({ text: "" });
-
-    const submitComment = () => {
-      if (newComment.value.text.trim() !== "") {
-        comments.value.push({
-          id: comments.value.length + 1,
+    };
+  },
+  methods: {
+    submitComment() {
+      if (this.newComment.text.trim() !== "") {
+        this.comments.push({
+          id: this.comments.length + 1,
           avatar: "https://via.placeholder.com/40",
           role: "Новый пользователь",
           department: "HR",
           phone: "Не указан",
           email: "Не указан",
-          text: newComment.value.text,
+          text: this.newComment.text,
         });
-        newComment.value.text = "";
+        this.newComment.text = "";
       }
-    };
-
-    return { comments, newComment, submitComment };
+    },
   },
 };
 </script>
@@ -116,4 +116,3 @@ export default {
   font-size: 14px;
 }
 </style>
-
