@@ -1,4 +1,4 @@
-template>
+<template>
   <div class="comments-container">
     <!-- Форма добавления нового комментария -->
     <q-form @submit="submitComment" class="comment-form">
@@ -8,6 +8,7 @@ template>
         filled 
         clearable 
         @input="checkLength"
+        @clear="clearComment"
       />
       <div 
         class="char-counter" 
@@ -68,6 +69,9 @@ export default {
       if (this.newComment.text.length > 1000) {
         this.newComment.text = this.newComment.text.slice(0, 1000);
       }
+    },
+    clearComment() {
+      this.newComment.text = "";
     },
     submitComment() {
       if (this.newComment.text.trim() !== "" && this.newComment.text.length <= 1000) {
