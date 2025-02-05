@@ -2,8 +2,17 @@
   <div class="comments-container">
     <!-- Форма добавления нового комментария -->
     <q-form @submit="submitComment" class="comment-form">
-      <q-input v-model="newComment.text" label="Добавить комментарий" filled clearable :maxlength="1000" />
+      <q-input 
+        v-model="newComment.text" 
+        label="Добавить комментарий" 
+        filled 
+        clearable 
+        :maxlength="1000" 
+      />
       <div class="char-counter">{{ newComment.text.length }} / 1000</div>
+      <q-tooltip v-if="newComment.text.length > 1000" class="warning-tooltip">
+        Максимальная длина комментария 1000 символов
+      </q-tooltip>
       <q-btn label="Отправить" type="submit" color="primary" />
     </q-form>
 
@@ -87,6 +96,14 @@ export default {
   color: #555;
   text-align: right;
   margin-bottom: 5px;
+}
+
+.warning-tooltip {
+  color: red;
+  font-size: 12px;
+  background: #ffcccc;
+  padding: 5px;
+  border-radius: 4px;
 }
 
 .comment-list {
