@@ -1,4 +1,4 @@
-<template>
+template>
   <div class="comments-container">
     <!-- Форма добавления нового комментария -->
     <q-form @submit="submitComment" class="comment-form">
@@ -7,12 +7,17 @@
         label="Добавить комментарий" 
         filled 
         clearable 
-        :maxlength="1000" 
+        @input="checkLength"
       />
-      <div class="char-counter">{{ newComment.text.length }} / 1000</div>
-      <q-tooltip v-if="newComment.text.length > 1000" class="warning-tooltip">
-        Максимальная длина комментария 1000 символов
-      </q-tooltip>
+      <div 
+        class="char-counter" 
+        :class="{ 'char-counter-warning': newComment.text.length >= 950 }"
+      >
+        {{ newComment.text.length }} / 1000
+      </div>
+      <div v-if="newComment.text.length > 1000" class="error-message">
+        Максимальная длина комментария — 1000 символов
+      </div>
       <q-btn label="Отправить" type="submit" color="primary" />
     </q-form>
 
@@ -59,6 +64,11 @@ export default {
     };
   },
   methods: {
+    checkLength() {
+      if (this.newComment.text.length > 1000) {
+        this.newComment.text = this.newComment.text.slice(0, 1000);
+      }
+    },
     submitComment() {
       if (this.newComment.text.trim() !== "" && this.newComment.text.length <= 1000) {
         this.comments.push({
@@ -98,12 +108,14 @@ export default {
   margin-bottom: 5px;
 }
 
-.warning-tooltip {
+.char-counter-warning {
+  color: red;
+}
+
+.error-message {
   color: red;
   font-size: 12px;
-  background: #ffcccc;
-  padding: 5px;
-  border-radius: 4px;
+  margin-top: -5px;
 }
 
 .comment-list {
