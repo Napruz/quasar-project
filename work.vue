@@ -2,7 +2,7 @@
   <div class="comments-container">
     <!-- Форма добавления нового комментария -->
     <q-form @submit="submitComment" class="comment-form">
-      <q-input v-model="newComment.text" label="Добавить комментарий" filled clearable />
+      <q-input v-model="newComment.text" label="Добавить комментарий" filled clearable :maxlength="1000" />
       <q-btn label="Отправить" type="submit" color="primary" />
     </q-form>
 
@@ -50,7 +50,7 @@ export default {
   },
   methods: {
     submitComment() {
-      if (this.newComment.text.trim() !== "") {
+      if (this.newComment.text.trim() !== "" && this.newComment.text.length <= 1000) {
         this.comments.push({
           id: this.comments.length + 1,
           avatar: "https://via.placeholder.com/40",
