@@ -3,6 +3,7 @@
     <!-- Форма добавления нового комментария -->
     <q-form @submit="submitComment" class="comment-form">
       <q-input v-model="newComment.text" label="Добавить комментарий" filled clearable :maxlength="1000" />
+      <div class="char-counter">{{ newComment.text.length }} / 1000</div>
       <q-btn label="Отправить" type="submit" color="primary" />
     </q-form>
 
@@ -79,6 +80,13 @@ export default {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
+}
+
+.char-counter {
+  font-size: 12px;
+  color: #555;
+  text-align: right;
+  margin-bottom: 5px;
 }
 
 .comment-list {
