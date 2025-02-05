@@ -114,5 +114,8 @@ export default {
 
 .comment-value {
   font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 </style>
