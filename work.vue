@@ -1,5 +1,25 @@
-<template>
-  <q-toggle
+import { ref } from "vue";
+import { useQuasar } from "quasar";
+
+export default {
+  setup() {
+    const $q = useQuasar(); // Инициализируем Quasar
+
+    const showToast = () => {
+      $q.notify({
+        message: "Задача сохранена",
+        color: "green",
+        position: "top-right",
+        timeout: 2000,
+      });
+    };
+
+    return {
+      showToast,
+    };
+  },
+};
+<q-toggle
   v-model="task.completed"
   :false-value="false"
   :true-value="true"
@@ -8,21 +28,3 @@
   unchecked-color="red"
   @update:model-value="showToast"
 />
-  <q-toast ref="toast" position="top-right" color="green" />
-</template>
-
-<script>
-  methods: {
-  showToast() {
-    this.$q.notify({
-      message: "Задача сохранена",
-      color: "green",
-      position: "top-right",
-      timeout: 2000
-    });
-  }
-}
-</script>  
-
-
-
