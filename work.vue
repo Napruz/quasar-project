@@ -13,14 +13,32 @@
                 <q-tab-panel name="all">
                   <ul class="stages-list">
                     <li v-for="(task, taskIndex) in process.tasks" :key="taskIndex" class="stages-item">
-                      <TaskItem :task="task" @toggle-task="showToast" />
+                      <div class="duration-wrapper">
+                        <div class="process-description-wrapper row">
+                          <q-icon size="xs" name="fa-solid fa-circle-arrow-right" color="grey" class="process-description-icon" />
+                          <p class="process-description row">{{ task.description }}</p>
+                        </div>
+                        <q-toggle v-model="task.completed" :false-value="false" :true-value="true" 
+                                  :label="task.completed ? 'Выполнено' : 'Не выполнено'" 
+                                  color="green" unchecked-color="red" 
+                                  @update:model-value="showToast(task.description)" />
+                      </div>
                     </li>
                   </ul>
                 </q-tab-panel>
                 <q-tab-panel name="pending">
                   <ul class="stages-list">
                     <li v-for="(task, taskIndex) in pendingTasks(process.tasks)" :key="taskIndex" class="stages-item">
-                      <TaskItem :task="task" @toggle-task="showToast" />
+                      <div class="duration-wrapper">
+                        <div class="process-description-wrapper row">
+                          <q-icon size="xs" name="fa-solid fa-circle-arrow-right" color="grey" class="process-description-icon" />
+                          <p class="process-description row">{{ task.description }}</p>
+                        </div>
+                        <q-toggle v-model="task.completed" :false-value="false" :true-value="true" 
+                                  :label="task.completed ? 'Выполнено' : 'Не выполнено'" 
+                                  color="green" unchecked-color="red" 
+                                  @update:model-value="showToast(task.description)" />
+                      </div>
                     </li>
                   </ul>
                 </q-tab-panel>
@@ -35,10 +53,8 @@
 
 <script>
 import { ref } from "vue";
-import TaskItem from "@/components/TaskItem.vue";
 
 export default {
-  components: { TaskItem },
   setup() {
     const selectedTab = ref("all");
     const processes = ref([
