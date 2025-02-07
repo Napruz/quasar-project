@@ -1,4 +1,4 @@
- <template>
+<template>
   <div v-for="(process, processIndex) in processes" :key="processIndex" class="process-card">
     <!-- Заголовки табов -->
     <div class="tab-header">
@@ -41,33 +41,66 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 export default {
   setup() {
     const processes = ref([]); // Данные приходят с сервера
     const activeTabs = ref({}); // Храним активные вкладки по индексам
 
-    const loadProcesses = (serverData) => {
+    // Имитируем загрузку данных с сервера
+    const loadProcesses = () => {
+      const serverData = [
+        {
+          id: 1,
+          tasks: [
+            { description: "Сделать отчёт", completed: false },
+            { description: "Проверить почту", completed: true },
+            { description: "Запланировать встречу", completed: false }
+          ]
+        },
+        {
+          id: 2,
+          tasks: [
+            { description: "Подготовить презентацию", completed: false },
+            { description: "Согласовать бюджет", completed: true }
+          ]
+        }
+      ];
       processes.value = serverData;
       serverData.forEach((_, index) => {
-        activeTabs.value[index] = "all"; // По умолчанию "Все задачи"
+        activeTabs.value[index] = "all"; // По умолчанию показываем "Все задачи"
       });
     };
 
     const pendingTasks = (tasks) => tasks.filter(task => !task.completed);
 
+    const showToast = (taskDescription) => {
+      console.log(`Задача "${taskDescription}" обновлена!`);
+    };
+
+    onMounted(() => {
+      loadProcesses();
+    });
+
     return {
       processes,
       activeTabs,
       pendingTasks,
-      loadProcesses
+      showToast
     };
   }
 };
 </script>
 
 <style scoped>
+.process-card {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
 .tab-header {
   display: flex;
   gap: 10px;
@@ -77,6 +110,7 @@ export default {
   cursor: pointer;
   padding: 5px 10px;
   border-bottom: 2px solid transparent;
+  transition: border-color 0.3s ease;
 }
 
 .active-tab {
@@ -96,4 +130,3 @@ export default {
   padding: 5px 0;
 }
 </style>
-
