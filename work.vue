@@ -49,6 +49,7 @@
                     </li>
                     <li class="table-row-item column">
                       <q-toggle
+                        v-model="task.completed"
                         :false-value="false"
                         :true-value="true"
                         label="Выполнено"
@@ -58,8 +59,7 @@
                     </li>
                     <li class="table-row-item column">
                       <q-toggle
-                        :false-value="false"
-                        :true-value="true"
+                        :model-value="task.completed"
                         label="Не выполнено"
                         color="green"
                         disable
@@ -82,11 +82,11 @@
                 class="add-task-button"
                 label="Добавить задачу"
                 color="secondary"
-                @click="openModal(month.id)"
+                @click="openDialog(month.id)"
               />
 
-              <!-- Модальное окно для добавления задачи -->
-              <q-modal v-model="isModalOpen" persistent>
+              <!-- Диалоговое окно для добавления задачи -->
+              <q-dialog v-model="isDialogOpen" persistent>
                 <q-card style="min-width: 400px;">
                   <q-card-section>
                     <div class="q-gutter-md">
@@ -112,7 +112,7 @@
                       flat
                       label="Отмена"
                       color="grey"
-                      @click="closeModal"
+                      @click="closeDialog"
                     />
                     <q-btn
                       flat
@@ -122,7 +122,7 @@
                     />
                   </q-card-actions>
                 </q-card>
-              </q-modal>
+              </q-dialog>
             </q-card-section>
           </q-card>
         </q-expansion-item>
@@ -161,10 +161,9 @@ const monthTasks = ref([
   },
 ]);
 
-const isModalOpen = ref(false);
+const isDialogOpen = ref(false);
 const currentMonthId = ref(null);
 
-// Инициализация новой задачи
 const newTask = ref({
   taskName: "",
   dueDate: "",
@@ -176,40 +175,41 @@ const newTask = ref({
   comment: "",
 });
 
-// Открытие модального окна
-const openModal = (monthId) => {
+// Открытие диалога
+const openDialog = (monthId) => {
   currentMonthId.value = monthId;
-  isModalOpen.value = true;
+  isDialogOpen.value = true;
 };
 
-// Закрытие модального окна
-const closeModal = () => {
-  isModalOpen.value = false;
+// Закрытие диалога
+const closeDialog = () => {
+  isDialogOpen.value = false;
+  resetNewTask();
 };
 
 // Сохранение задачи
 const saveTask = () => {
-  if (
-    newTask.value.taskName.trim() !== "" &&
-    newTask.value.dueDate.trim() !== ""
-  ) {
+  if (newTask.value.taskName && newTask.value.dueDate) {
     const month = monthTasks.value.find((m) => m.id === currentMonthId.value);
     if (month) {
       const newTaskId = Date.now();
       month.tasks.push({ ...newTask.value, id: newTaskId });
     }
-    // Очистка формы и закрытие окна
-    newTask.value = {
-      taskName: "",
-      dueDate: "",
-      completed: false,
-      canChange: true,
-      completedMentor: false,
-      mentorCanChange: true,
-      actualDueDate: "",
-      comment: "",
-    };
-    closeModal();
+    closeDialog();
   }
+};
+
+// Сброс формы новой задачи
+const resetNewTask = () => {
+  newTask.value = {
+    taskName: "",
+    dueDate: "",
+    completed: false,
+    canChange: true,
+    completedMentor: false,
+    mentorCanChange: true,
+    actualDueDate: "",
+    comment: "",
+  };
 };
 </script>
