@@ -132,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 const monthTasks = ref([
   {
@@ -164,7 +164,7 @@ const monthTasks = ref([
 const isModalOpen = ref(false);
 const currentMonthId = ref(null);
 
-// Новая задача
+// Инициализация новой задачи
 const newTask = ref({
   taskName: "",
   dueDate: "",
