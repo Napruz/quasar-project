@@ -1,45 +1,90 @@
-<li class="table-row-item date-pick">
-  <q-input 
-    v-model="inputDate" 
-    filled 
-    label="Выберите дату" 
-    readonly 
-    @click="showDatePicker = true"
-  >
-    <template v-slot:append>
-      <q-icon name="event" class="cursor-pointer" @click="showDatePicker = true" />
-    </template>
+<template>
+  <ul class="month-list">
+    <li class="month-item" v-for="(month, monthIndex) in months" :key="monthIndex">
+      <div class="month-wrapper row" style="flex-wrap: nowrap">
+        <q-expansion-item
+          expand-separator
+          switch-toggle-side
+          :label="month.title"
+          class="expansion-item-wrapper"
+        >
+          <template v-slot:header>
+            <div class="header-content">
+              <span>{{ month.title }}</span>
+            </div>
+          </template>
 
-    <q-popup-proxy 
-      v-model="showDatePicker" 
-      transition-show="scale" 
-      transition-hide="scale"
-    >
-      <q-date 
-        v-model="selectedDate" 
-        mask="YYYY-MM-DD" 
-        :model-value="selectedDate" 
-        @update:model-value="updateFormattedDate" 
-      />
-    </q-popup-proxy>
-  </q-input>
-</li>
+          <q-card>
+            <q-card-section class="main-process-container column">
+              <!-- Список задач в месяце -->
+              <ul class="month-tasks-list">
+                <li class="month-task-item" v-for="(task, taskIndex) in month.tasks" :key="taskIndex">
+                  <ul class="table-list">
+                    <li class="table-row-item column" v-for="(block, blockIndex) in task.blocks" :key="blockIndex">
+                      {{ block }}
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+      </div>
+      <!-- Форма для добавления новой задачи -->
+      <q-form @submit="addTask(monthIndex)">
+        <q-input
+          v-for="blockIndex in 6"
+          :key="blockIndex"
+          v-model="newTask.blocks[blockIndex - 1]"
+          label="Блок {{ blockIndex }}"
+          outlined
+          dense
+          style="margin-bottom: 10px"
+        />
+        <q-btn type="submit" label="Добавить задачу" color="primary" />
+      </q-form>
+    </li>
+  </ul>
+</template>
 
-const selectedDate = ref('2025-03-23'); // Начальная дата
-const showDatePicker = ref(false);
-const inputDate = ref('');
+import { ref } from "vue";
 
-// Обновляем значение в инпуте при выборе даты
-const updateFormattedDate = (val) => {
-  selectedDate.value = val;
-  inputDate.value = date.formatDate(val, 'DD.MM.YYYY');
-  showDatePicker.value = false;
-};
+export default {
+  setup() {
+    const months = ref([
+      {
+        title: "Первый месяц работы",
+        tasks: []
+      },
+      {
+        title: "Второй месяц работы",
+        tasks: []
+      },
+      {
+        title: "Третий месяц работы",
+        tasks: []
+      }
+    ]);
 
-// Следим за изменением selectedDate и обновляем q-date вручную
-watch(selectedDate, (newDate) => {
-  // Принудительно обновляем q-date, чтобы q-date-header отображал правильную дату
-  if (newDate) {
-    inputDate.value = date.formatDate(newDate, 'DD.MM.YYYY');
+    const newTask = ref({
+      blocks: Array(6).fill("")
+    });
+
+    const addTask = (monthIndex) => {
+      if (newTask.value.blocks.some((block) => block.trim() === "")) {
+        alert("Заполните все блоки");
+        return;
+      }
+
+      months.value[monthIndex].tasks.push({ blocks: [...newTask.value.blocks] });
+
+      newTask.value.blocks = Array(6).fill("");
+    };
+
+    return {
+      months,
+      newTask,
+      addTask
+    };
   }
-});
+};
