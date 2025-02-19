@@ -1,8 +1,15 @@
-const updateLocalNewTaskList = (taskMonth, newTask) => {
+const updateLocalNewTaskList = (taskMonth, taskText, taskDate) => {
   const month = cabinetData.value.find((m) => m.title === taskMonth);
 
   if (month) {
-    month.tasks.push(newTask);
+    month.tasks.push({
+      id: `temp-${Date.now()}`, // Временный ID (до перезагрузки)
+      taskName: taskText,
+      dueDate: taskDate,
+      completed: false,
+      canChange: true,
+      completedMentor: false,
+    });
   } else {
     console.warn(`Не найден месяц: ${taskMonth}`);
   }
@@ -30,18 +37,12 @@ const postNewTask = async (taskMonth, taskText, taskDate) => {
     formData.append("action", JSON.stringify(requestBody));
 
     const queryString = new URLSearchParams({ secid: wtSecId }).toString();
-    const response = await axios.post(`${BACKEND_POST_URL}${queryString}`, formData, {
+    await axios.post(`${BACKEND_POST_URL}${queryString}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    const newTask = response.data.results;
-    if (newTask && newTask.id) {
-      updateLocalNewTaskList(taskMonth, newTask);
-      showToast("Задача добавлена");
-    } else {
-      console.warn("Ответ сервера не содержит данные о новой задаче", response.data);
-      showToast("Ошибка при добавлении задачи");
-    }
+    updateLocalNewTaskList(taskMonth, taskText, taskDate);
+    showToast("Задача добавлена");
   } catch (error) {
     console.error("Ошибка при добавлении задачи", error);
     showToast("Ошибка при добавлении задачи");
