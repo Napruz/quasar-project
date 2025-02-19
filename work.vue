@@ -1,55 +1,53 @@
-<q-btn
-  class="add-task-button"
-  label="Добавить задачу"
-  color="secondary"
-  @click="openModal"
+<q-input
+  v-model="newTaskText"
+  label="Описание задачи"
+  outlined
+  required
+  clearable
+  type="textarea"
+  autogrow
+  :maxlength="1000"
 />
 
-<!-- Диалоговое окно для добавления задачи -->
-<q-dialog v-model="isModalOpen" persistent>
-  <q-card style="min-width: 400px;">
-    <q-card-section>
-      <div class="q-gutter-md">
-        <q-input
-          label="Описание задачи"
-          type="text"
-          outlined
-          required
-        />
-        <q-input
-          label="Срок исполнения"
-          type="date"
-          outlined
-          required
-        />
-      </div>
-    </q-card-section>
+<q-input
+  v-model="newTaskDate"
+  label="Срок исполнения"
+  type="date"
+  outlined
+  required
+  style="max-width: 200px;"
+/>
 
-    <q-card-actions align="right">
-      <q-btn
-        flat
-        label="Отмена"
-        color="grey"
-        @click="closeModal"
-      />
-      <q-btn
-        flat
-        label="Сохранить"
-        color="secondary"
-        @click="saveTask"
-      />
-    </q-card-actions>
-  </q-card>
-</q-dialog>
+const newTaskText = ref("");
+const newTaskDate = ref("");
+const selectedMonth = ref(null); // Например, если выбираешь месяц в другом месте
 
-return {
-  isModalOpen,
-  openModal,
-  closeModal,
-  saveTask,
-  monthTasks,
-  showToast,
-  toastVisible,
-  toastMessage,
+const saveTask = () => {
+  if (!newTaskText.value || !newTaskDate.value) {
+    showToast("Заполните все поля");
+    return;
+  }
+
+  addNewTask(selectedMonth.value, newTaskText.value, newTaskDate.value);
+  
+  closeModal();
+  clearModal();
 };
 
+const clearModal = () => {
+  newTaskText.value = "";
+  newTaskDate.value = "";
+  isModalOpen.value = false;
+};
+
+updateLocalNewTaskList(taskMonth, taskText, taskDate) {
+  const month = this.cabinetData.find(m => m.id === taskMonth);
+  if (month) {
+    month.tasks.push({
+      id: Date.now(), // Временный id
+      name: taskText,
+      date: taskDate,
+      completed: false
+    });
+  }
+}
