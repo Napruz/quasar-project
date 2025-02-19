@@ -15,14 +15,12 @@ export default {
     const isModalOpen = ref(false);
     const cabinetData = ref([]);
 
-    // Соответствие месяцев (чтобы избежать ошибок)
     const monthMap = {
       "Первый месяц работы": "1",
       "Второй месяц работы": "2",
       "Третий месяц работы": "3",
     };
 
-    // Показ уведомлений
     const showToast = (message = "Задача сохранена") => {
       toastMessage.value = message;
       toastVisible.value = true;
@@ -31,7 +29,6 @@ export default {
       }, 2000);
     };
 
-    // Открытие модального окна
     const openModal = (monthTitle) => {
       selectedMonth.value = monthTitle;
       isModalOpen.value = true;
@@ -41,7 +38,6 @@ export default {
       isModalOpen.value = false;
     };
 
-    // Очистка формы
     const clearModal = () => {
       newTaskText.value = "";
       newTaskDate.value = "";
@@ -49,7 +45,7 @@ export default {
       isModalOpen.value = false;
     };
 
-    // Загрузка данных с сервера
+    // 🔹 Загружаем **все данные**
     const fetchCabinetData = async () => {
       try {
         const params = {
@@ -59,44 +55,55 @@ export default {
 
         const response = await axios.post(BACKEND_URL, new URLSearchParams(params).toString());
         cabinetData.value = response.data.results;
-        console.log("Загруженные данные:", cabinetData.value);
+        console.log("🔄 Загруженные данные:", cabinetData.value);
       } catch (error) {
-        console.error("Ошибка загрузки данных", error);
+        console.error("❌ Ошибка загрузки данных", error);
       }
     };
 
-    // Добавление новой задачи в локальный список
-    const updateLocalNewTaskList = (taskMonth, taskText, taskDate) => {
-      let monthData = cabinetData.value.find((m) => m.title === taskMonth);
+    // 🔹 Загружаем **только задачи для конкретного месяца**
+    const fetchTasksForMonth = async (monthNumber) => {
+      try {
+        const params = {
+          collection_code: "vtbl_adaptation_2025",
+          parameters: `data_mode=collaborator_result_task_data&month=${monthNumber}`,
+        };
+
+        const response = await axios.post(BACKEND_URL, new URLSearchParams(params).toString());
+
+        const newTasks = response.data.results?.[0]?.tasks || [];
+
+        console.log(`📅 Загружены задачи за месяц ${monthNumber}:`, newTasks);
+
+        // 🛠 Добавляем **только новые** задачи
+        updateLocalTasks(monthNumber, newTasks);
+      } catch (error) {
+        console.error(`❌ Ошибка загрузки задач за ${monthNumber} месяц`, error);
+      }
+    };
+
+    // 🔹 Сравниваем и добавляем **только новые** задачи
+    const updateLocalTasks = (monthNumber, newTasks) => {
+      const monthData = cabinetData.value.find((m) => m.title === monthNumber);
 
       if (!monthData) {
-        console.warn(`Месяц "${taskMonth}" не найден. Создаем новый.`);
-        
-        // Если месяца нет, создаем его
-        monthData = {
-          title: taskMonth,
-          tasks: [],
-        };
-        cabinetData.value.push(monthData);
+        console.warn(`⚠️ Месяц "${monthNumber}" не найден. Добавляем новый.`);
+        cabinetData.value.push({ title: monthNumber, tasks: newTasks });
+      } else {
+        // Оставляем только **уникальные** задачи
+        const existingTaskIds = new Set(monthData.tasks.map((task) => task.id));
+        newTasks.forEach((task) => {
+          if (!existingTaskIds.has(task.id)) {
+            monthData.tasks.push(task);
+          }
+        });
       }
 
-      monthData.tasks.push({
-        id: `temp-${Date.now()}`, // Временный ID
-        taskName: taskText,
-        dueDate: taskDate,
-        completed: false,
-        canChange: true,
-        completedMentor: false,
-      });
-
-      // Глубокая реактивность
+      // Обновляем состояние (глубокая реактивность)
       cabinetData.value = [...cabinetData.value];
-
-      // Очищаем модалку после успешного добавления
-      clearModal();
     };
 
-    // Отправка новой задачи на сервер
+    // 🔹 Отправляем новую задачу на сервер
     const postNewTask = async (taskMonth, taskText, taskDate) => {
       try {
         const requestBody = {
@@ -123,20 +130,21 @@ export default {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
-        updateLocalNewTaskList(taskMonth, taskText, taskDate);
+        // После успешной отправки запрашиваем **обновленные** задачи за месяц
+        fetchTasksForMonth(taskMonth);
         showToast("Задача добавлена");
       } catch (error) {
-        console.error("Ошибка при добавлении задачи", error);
+        console.error("❌ Ошибка при добавлении задачи", error);
         showToast("Ошибка при добавлении задачи");
       }
     };
 
-    // Добавление новой задачи
+    // 🔹 Добавляем новую задачу
     const addNewTask = async (taskMonth, taskText, taskDate) => {
       await postNewTask(taskMonth, taskText, taskDate);
     };
 
-    // Сохранение задачи
+    // 🔹 Сохранение задачи
     const saveTask = () => {
       if (!selectedMonth.value) {
         showToast("Ошибка: не выбран месяц");
@@ -155,9 +163,10 @@ export default {
       }
 
       addNewTask(mappedMonth, newTaskText.value, newTaskDate.value);
+      closeModal();
     };
 
-    // Загрузка данных при старте
+    // Загружаем **все** данные при старте
     onMounted(() => {
       fetchCabinetData();
     });
