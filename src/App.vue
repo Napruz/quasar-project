@@ -1,89 +1,53 @@
-<q-btn
-  class="add-task-button"
-  label="Добавить задачу"
-  color="secondary"
-  @click="openModal(month.title)"
-/>
+const updateLocalNewTaskList = (taskMonth, newTask) => {
+  const month = cabinetData.value.find((m) => m.title === taskMonth);
 
-<q-dialog v-model="isModalOpen">
-  <q-card class="column" style="min-width: 500px; max-width: 600px;">
-    <div class="row justify-between no-wrap">
-      <span style="margin-top: 20px; margin-left: 20px;">
-        Новая задача
-      </span>
-
-      <q-btn
-        icon="close"
-        flat
-        dense
-        round
-        style="margin-left: auto; margin-right: 10px; margin-top: 10px;"
-        @click="closeModal"
-      />
-    </div>
-
-    <q-card-section>
-      <div class="q-gutter-md column">
-        <q-input
-          v-model="newTaskText"
-          label="Описание задачи"
-          outlined
-          required
-          clearable
-          type="textarea"
-          autogrow
-          :maxlength="1000"
-        />
-
-        <q-input
-          v-model="newTaskDate"
-          label="Срок исполнения"
-          type="date"
-          outlined
-          required
-          style="max-width: 200px;"
-        />
-      </div>
-    </q-card-section>
-
-    <q-card-actions align="right">
-      <q-btn flat label="Отмена" color="grey" @click="clearModal" />
-      <q-btn flat label="Сохранить" color="secondary" @click="saveTask()" />
-    </q-card-actions>
-  </q-card>
-</q-dialog>
-
-
-const isModalOpen = ref(false);
-const selectedMonth = ref(""); // Хранит название выбранного месяца
-
-const openModal = (monthTitle) => {
-  selectedMonth.value = monthTitle; // Сохраняем выбранный месяц перед открытием модалки
-  isModalOpen.value = true;
+  if (month) {
+    month.tasks.push(newTask);
+  } else {
+    console.warn(`Не найден месяц: ${taskMonth}`);
+  }
 };
 
-const saveTask = () => {
-  console.log("Выбранный месяц:", selectedMonth.value);
+const postNewTask = async (taskMonth, taskText, taskDate) => {
+  try {
+    const requestBody = {
+      action: "eval_action",
+      remote_action_id: "7472730402329554549",
+      wvars: [
+        { name: "_object_id", value: "" },
+        { name: "_secid", value: wtSecId },
+        { name: "user_id", value: "" },
+        { name: "adaptation_id", value: "" },
+        { name: "role", value: "collaborator" },
+        { name: "action_name", value: `add_${taskMonth}_mounth_task` },
+        { name: "task_name", value: taskText },
+        { name: "task_date", value: taskDate },
+        { name: "task_comment", value: "" },
+      ],
+    };
 
-  const monthMap = {
-    "Первый месяц работы": "1",
-    "Второй месяц работы": "2",
-    "Третий месяц работы": "3",
-  };
+    const formData = new FormData();
+    formData.append("action", JSON.stringify(requestBody));
 
-  if (monthMap[selectedMonth.value]) {
-    selectedMonth.value = monthMap[selectedMonth.value];
-  } else {
-    showToast("Некорректное название месяца");
-    return;
+    const queryString = new URLSearchParams({ secid: wtSecId }).toString();
+    const response = await axios.post(`${BACKEND_POST_URL}${queryString}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const newTask = response.data.results;
+    if (newTask && newTask.id) {
+      updateLocalNewTaskList(taskMonth, newTask);
+      showToast("Задача добавлена");
+    } else {
+      console.warn("Ответ сервера не содержит данные о новой задаче", response.data);
+      showToast("Ошибка при добавлении задачи");
+    }
+  } catch (error) {
+    console.error("Ошибка при добавлении задачи", error);
+    showToast("Ошибка при добавлении задачи");
   }
+};
 
-  if (!newTaskText.value.trim() || !newTaskDate.value.trim()) {
-    showToast("Заполните все поля");
-    return;
-  }
-
-  addNewTask(selectedMonth.value, newTaskText.value, newTaskDate.value);
-  closeModal();
-  clearModal();
+const addNewTask = async (taskMonth, taskText, taskDate) => {
+  await postNewTask(taskMonth, taskText, taskDate);
 };
