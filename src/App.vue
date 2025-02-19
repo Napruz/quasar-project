@@ -14,7 +14,14 @@ export default {
     const selectedMonth = ref(null);
     const isModalOpen = ref(false);
     const cabinetData = ref([]);
-    
+
+    // Соответствие месяцев (чтобы избежать ошибок)
+    const monthMap = {
+      "Первый месяц работы": "1",
+      "Второй месяц работы": "2",
+      "Третий месяц работы": "3",
+    };
+
     // Показ уведомлений
     const showToast = (message = "Задача сохранена") => {
       toastMessage.value = message;
@@ -34,7 +41,7 @@ export default {
       isModalOpen.value = false;
     };
 
-    // Очистка полей формы
+    // Очистка формы
     const clearModal = () => {
       newTaskText.value = "";
       newTaskDate.value = "";
@@ -58,34 +65,35 @@ export default {
       }
     };
 
-    // Локальное обновление списка задач
+    // Добавление новой задачи в локальный список
     const updateLocalNewTaskList = (taskMonth, taskText, taskDate) => {
-      const monthIndex = cabinetData.value.findIndex((m) => m.title === taskMonth);
+      let monthData = cabinetData.value.find((m) => m.title === taskMonth);
 
-      if (monthIndex !== -1) {
-        const updatedMonth = { ...cabinetData.value[monthIndex] };
-        updatedMonth.tasks = [...updatedMonth.tasks];
-
-        updatedMonth.tasks.push({
-          id: `temp-${Date.now()}`, // Временный ID
-          taskName: taskText,
-          dueDate: taskDate,
-          completed: false,
-          canChange: true,
-          completedMentor: false,
-        });
-
-        cabinetData.value = [
-          ...cabinetData.value.slice(0, monthIndex),
-          updatedMonth,
-          ...cabinetData.value.slice(monthIndex + 1),
-        ];
-
-        // Очищаем поля после успешного добавления
-        clearModal();
-      } else {
-        console.warn(`Не найден месяц: ${taskMonth}`);
+      if (!monthData) {
+        console.warn(`Месяц "${taskMonth}" не найден. Создаем новый.`);
+        
+        // Если месяца нет, создаем его
+        monthData = {
+          title: taskMonth,
+          tasks: [],
+        };
+        cabinetData.value.push(monthData);
       }
+
+      monthData.tasks.push({
+        id: `temp-${Date.now()}`, // Временный ID
+        taskName: taskText,
+        dueDate: taskDate,
+        completed: false,
+        canChange: true,
+        completedMentor: false,
+      });
+
+      // Глубокая реактивность
+      cabinetData.value = [...cabinetData.value];
+
+      // Очищаем модалку после успешного добавления
+      clearModal();
     };
 
     // Отправка новой задачи на сервер
@@ -134,12 +142,6 @@ export default {
         showToast("Ошибка: не выбран месяц");
         return;
       }
-
-      const monthMap = {
-        "Первый месяц работы": "1",
-        "Второй месяц работы": "2",
-        "Третий месяц работы": "3",
-      };
 
       const mappedMonth = monthMap[selectedMonth.value];
       if (!mappedMonth) {
