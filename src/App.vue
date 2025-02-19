@@ -180,15 +180,30 @@ export default {
     };
 
     // ✅ Сохранение задачи
-    const saveTask = () => {
-      if (!newTaskText.value.trim() || !newTaskDate.value.trim()) {
-        showToast("Заполните все поля");
-        return;
-      }
-      addNewTask(selectedMonth.value, newTaskText.value, newTaskDate.value);
-      closeModal();
-      clearModal();
-    };
+    const saveTask = (monthString) => {
+  const monthMap = {
+    "Первый месяц работы": "1",
+    "Второй месяц работы": "2",
+    "Третий месяц работы": "3",
+  };
+
+  if (monthMap[monthString]) {
+    selectedMonth.value = monthMap[monthString];
+  } else {
+    showToast("Некорректное название месяца");
+    return;
+  }
+
+  if (!newTaskText.value.trim() || !newTaskDate.value.trim()) {
+    showToast("Заполните все поля");
+    return;
+  }
+
+  addNewTask(selectedMonth.value, newTaskText.value, newTaskDate.value);
+  closeModal();
+  clearModal();
+};
+
 
     // ✅ Автоматический вызов при загрузке
     onMounted(() => {
