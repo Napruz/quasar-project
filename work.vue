@@ -1,30 +1,18 @@
-<script setup>
-import { nextTick } from 'vue'
+methods: {
+  printPage() {
+    const drawer = document.querySelector('.q-drawer')
 
-const printPage = async () => {
-  await nextTick() // Дожидаемся завершения обновлений DOM
+    if (drawer) {
+      drawer.style.display = 'none'
+    }
 
-  setTimeout(() => {
-    window.print()
-  }, 300) // Можно увеличить задержку, если нужно
+    setTimeout(() => {
+      window.print()
+
+      // Вернем меню после печати
+      setTimeout(() => {
+        if (drawer) drawer.style.display = ''
+      }, 500)
+    }, 300) // Подбираем задержку под твою страницу
+  }
 }
-</script>
-
-<template>
-  <div class="print-page-container">
-    <q-btn
-      color="grey"
-      icon="print"
-      label="Печать"
-      class="print-page-btn"
-      size="sm"
-      @click="printPage"
-    />
-  </div>
-</template>
-
-<style>
-.print-page-btn {
-  position: absolute;
-}
-</style>
