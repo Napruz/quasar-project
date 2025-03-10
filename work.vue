@@ -1,12 +1,12 @@
-const updateProcessState = (process) => {
-  process.state = process.tasks.every(task => task.completed) ? 'Выполнено' : 'Не выполнено';
+const updateMonthState = (month) => {
+  month.state = month.tasks.every(task => task.completed) ? 'Выполнено' : 'Не выполнено';
 };
 
-const handleToggle = async (newValue, id, process) => {
+const handleToggle = async (newValue, id, month) => {
   await postTaskState(newValue, id);
-  showToast("Задача сохранена");
   updateLocalTask(id, newValue);
-  updateProcessState(process); // Теперь обновляем только конкретный процесс
+  updateMonthState(month); // Обновляем только этот месяц
+  showToast("Задача сохранена");
 };
 
 <q-toggle
@@ -16,6 +16,6 @@ const handleToggle = async (newValue, id, process) => {
   :true-value="true"
   :label="task.completed ? 'Выполнено' : 'Не выполнено'"
   color="green"
-  @update:model-value="handleToggle(task.completed, task.id, process)"
+  @update:model-value="handleToggle(task.completed, task.id, month)"
   style="width: fit-content"
 />
