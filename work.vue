@@ -12,8 +12,7 @@ import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { useQuasar, date } from "quasar";
 import axios from "axios";
 
-const BACKEND_URL = window.location.origin + `/pp/Ext5/extjs_json_collection_data.html`;
-const BACKEND_POST_URL = window.location.origin + `/lpapi.html?object_id=&doc_id=&`;
+
 
 export default {
   setup() {
