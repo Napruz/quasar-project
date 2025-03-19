@@ -4,21 +4,39 @@
   switch-toggle-side
   :label="month.title"
   class="expansion-item-wrapper"
-  @update:model-value="(value) => sessionStorage.setItem(`expandedMonth_${month.id}`, JSON.stringify(value))"
+  @update:model-value="(value) => saveExpansionState(month.id, value)"
 >
-
 
 <script>
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
+import { useQuasar, date } from "quasar";
 import axios from "axios";
+
+const BACKEND_URL = window.location.origin + `/pp/Ext5/extjs_json_collection_data.html`;
+const BACKEND_POST_URL = window.location.origin + `/lpapi.html?object_id=&doc_id=&`;
 
 export default {
   setup() {
-    const cabinetData = ref([]);
     const expandedTaskProcesses = ref({});
-    const allTaskExpanded = ref(false);
-    let observer;
 
+    // Функция для сохранения состояния раскрытия месяцев в sessionStorage
+    const saveExpansionState = (monthId, value) => {
+      if (typeof window !== "undefined" && window.sessionStorage) {
+        sessionStorage.setItem(`expandedMonth_${monthId}`, JSON.stringify(value));
+      }
+      expandedTaskProcesses.value[monthId] = value;
+    };
+
+    // Функция для загрузки состояния раскрытия месяцев из sessionStorage
+    const loadExpansionState = (monthId) => {
+      if (typeof window !== "undefined" && window.sessionStorage) {
+        const storedState = sessionStorage.getItem(`expandedMonth_${monthId}`);
+        return storedState ? JSON.parse(storedState) : false;
+      }
+      return false; // Если sessionStorage не доступен, возвращаем false
+    };
+
+    // Загрузка состояния раскрытия для каждого месяца при монтировании
     const fetchCabinetData = async () => {
       try {
         const params = {
@@ -26,74 +44,32 @@ export default {
           parameters: "data_mode=collaborator_result_task_data",
         };
 
-        const response = await axios.post(
-          BACKEND_URL,
-          new URLSearchParams(params).toString()
-        );
+        const response = await axios.post(BACKEND_URL, new URLSearchParams(params).toString());
 
+        // Обрабатываем данные месяца
         cabinetData.value = response.data.results.map((month) => ({
           ...month,
           tasks: month.tasks.filter((task) => !task.isTemporary),
         }));
+
+        // Восстановление состояния раскрытия месяцев из sessionStorage
+        cabinetData.value.forEach((month) => {
+          expandedTaskProcesses.value[month.id] = loadExpansionState(month.id);
+        });
+
       } catch (error) {
         console.error("Ошибка загрузки данных", error);
       }
     };
 
-    const toggleProcessList = () => {
-      if (allTaskExpanded.value) {
-        cabinetData.value.forEach((month) => {
-          expandedTaskProcesses.value[month.id] = false;
-          sessionStorage.setItem(`expandedMonth_${month.id}`, JSON.stringify(false));
-        });
-      } else {
-        cabinetData.value.forEach((month) => {
-          expandedTaskProcesses.value[month.id] = true;
-          sessionStorage.setItem(`expandedMonth_${month.id}`, JSON.stringify(true));
-        });
-      }
-      allTaskExpanded.value = !allTaskExpanded.value;
-      sessionStorage.setItem("allTaskExpanded", JSON.stringify(allTaskExpanded.value));
-    };
-
-    onMounted(async () => {
-      await fetchCabinetData();
-
-      // Восстанавливаем состояние раскрытых месяцев из sessionStorage
-      cabinetData.value.forEach((month) => {
-        expandedTaskProcesses.value[month.id] = JSON.parse(sessionStorage.getItem(`expandedMonth_${month.id}`)) || false;
-      });
-
-      observer = new MutationObserver(async (mutationsList) => {
-        await nextTick();
-        mutationsList.forEach(() => {
-          changeStyles();
-          changeStepperStyle();
-          changeFontSizeStyle();
-          changeAnotherFontSizeStyle();
-          changeLeftLineStyle();
-          changeQItemLabelStyle();
-          changeQItemLabelSize();
-          stepperTab();
-        });
-      });
-
-      observer.observe(document.querySelector(".content-container"), {
-        childList: true,
-        subtree: true,
-        attributes: true,
-      });
-    });
-
-    onUnmounted(() => {
-      observer.disconnect();
+    onMounted(() => {
+      fetchCabinetData();
     });
 
     return {
-      cabinetData,
       expandedTaskProcesses,
-      allTaskExpanded,
-      toggleProcessList,
+      saveExpansionState,
+      loadExpansionState,
     };
   },
 };
