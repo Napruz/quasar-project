@@ -1,3 +1,13 @@
+<q-expansion-item
+  v-model="expandedTaskProcesses[month.id]"
+  expand-separator
+  switch-toggle-side
+  :label="month.title"
+  class="expansion-item-wrapper"
+  @update:model-value="(value) => sessionStorage.setItem(`expandedMonth_${month.id}`, JSON.stringify(value))"
+>
+
+
 <script>
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import axios from "axios";
