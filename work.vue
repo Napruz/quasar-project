@@ -1,52 +1,54 @@
-<q-expansion-item
-  expand-separator
-  switch-toggle-side
-  :label="'Проходят адаптацию (' + underGoingAdaptation.length + ')'"
-  class="expansion-item-wrapper"
-  v-model="expansionStates.undergoing"
-  @update:model-value="saveExpansionState"
+<q-dialog
+  v-if="newCommentModalId === task.id"
+  v-model="isCommentModalOpen"
 >
+  <q-card style="min-width: 600px;">
+    <q-card-section class="text-h6">
+      Добавьте свой комментарий
+    </q-card-section>
 
+    <q-card-section>
+      <q-input
+        v-model="newCommentText"
+        type="textarea"
+        autogrow
+        placeholder="Введите комментарий..."
+        outlined
+        dense
+        :maxlength="1000"
+        counter
+      />
+    </q-card-section>
 
-setup() {
-  const underGoingAdaptation = ref([]);
-  const preparingForReception = ref([]);
-  const completedAdaptation = ref([]);
-  const wasFiredOnAdaptation = ref([]);
+    <q-card-actions align="right">
+      <q-btn
+        label="ОК"
+        color="primary"
+        @click="submitComment(task.id)"
+        :disable="!newCommentText.trim()"
+      />
+      <q-btn
+        flat
+        label="Закрыть"
+        color="dark"
+        @click="isCommentModalOpen = false"
+      />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
 
-  const expansionStates = ref({
-    undergoing: false,
-    preparing: false,
-    completed: false,
-    fired: false,
-  });
+const isCommentModalOpen = ref(false);
+const newCommentText = ref("");
+const newCommentModalId = ref(null); // для отслеживания, к какому task относится
 
-  const saveExpansionState = () => {
-    sessionStorage.setItem('expansionStates', JSON.stringify(expansionStates.value));
-  };
+const submitComment = (taskId) => {
+  if (newCommentText.value.trim()) {
+    // Тут можно вызвать API или передать комментарий в store
+    console.log("Комментарий к задаче", taskId, ":", newCommentText.value);
 
-  const loadExpansionState = () => {
-    const saved = sessionStorage.getItem('expansionStates');
-    if (saved) {
-      expansionStates.value = JSON.parse(saved);
-    }
-  };
-
-  const fetchUsersData = async () => {
-    // ... твой код
-  };
-
-  onMounted(() => {
-    loadExpansionState();
-    fetchUsersData();
-  });
-
-  return {
-    underGoingAdaptation,
-    preparingForReception,
-    completedAdaptation,
-    wasFiredOnAdaptation,
-    expansionStates,
-    saveExpansionState,
-  };
-}
+    // Очистка и закрытие
+    newCommentText.value = "";
+    isCommentModalOpen.value = false;
+    newCommentModalId.value = null;
+  }
+};
