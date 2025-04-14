@@ -1,54 +1,69 @@
-<q-dialog
-  v-if="newCommentModalId === task.id"
-  v-model="isCommentModalOpen"
->
-  <q-card style="min-width: 600px;">
+<q-btn
+  color="secondary"
+  icon="send"
+  label="Отправить ИПВД в 1С"
+  class="print-page-btn"
+  size="sm"
+  @click="openSendDialog(cabinetData.id)"
+  style="left: 160px;"
+/>
+
+<!-- Диалог подтверждения -->
+<q-dialog v-model="isSendDialogOpen">
+  <q-card style="min-width: 400px">
     <q-card-section class="text-h6">
-      Добавьте свой комментарий
+      Подтверждение отправки
     </q-card-section>
 
     <q-card-section>
-      <q-input
-        v-model="newCommentText"
-        type="textarea"
-        autogrow
-        placeholder="Введите комментарий..."
-        outlined
-        dense
-        :maxlength="1000"
-        counter
-      />
+      При нажатии на кнопку <b>«Отправить ИПВД в 1С»</b> ИПВД будет автоматически направлен в 1С на подписание сотруднику.
     </q-card-section>
 
     <q-card-actions align="right">
+      <q-btn flat label="Отмена" color="primary" v-close-popup />
       <q-btn
-        label="ОК"
-        color="primary"
-        @click="submitComment(task.id)"
-        :disable="!newCommentText.trim()"
-      />
-      <q-btn
-        flat
-        label="Закрыть"
-        color="dark"
-        @click="isCommentModalOpen = false"
+        label="Отправить ИПВД в 1С"
+        color="positive"
+        @click="confirmSendTo1C"
       />
     </q-card-actions>
   </q-card>
 </q-dialog>
 
-const isCommentModalOpen = ref(false);
-const newCommentText = ref("");
-const newCommentModalId = ref(null); // для отслеживания, к какому task относится
+import { ref } from "vue";
 
-const submitComment = (taskId) => {
-  if (newCommentText.value.trim()) {
-    // Тут можно вызвать API или передать комментарий в store
-    console.log("Комментарий к задаче", taskId, ":", newCommentText.value);
+export default {
+  setup() {
+    const isSendDialogOpen = ref(false);
+    const currentSendId = ref(null);
 
-    // Очистка и закрытие
-    newCommentText.value = "";
-    isCommentModalOpen.value = false;
-    newCommentModalId.value = null;
-  }
+    const openSendDialog = (id) => {
+      currentSendId.value = id;
+      isSendDialogOpen.value = true;
+    };
+
+    const confirmSendTo1C = async () => {
+      if (currentSendId.value) {
+        await printPage1C(currentSendId.value);
+        isSendDialogOpen.value = false;
+        currentSendId.value = null;
+      }
+    };
+
+    const printPage1C = async (id) => {
+      console.log("Отправка ИПВД в 1С", id);
+
+      // Тут будет реальная отправка — пока заглушка:
+      window.location.href = `/download_file.html?file_id=${id}`;
+
+      // Можно заменить на POST-запрос к API, если нужно
+    };
+
+    return {
+      isSendDialogOpen,
+      currentSendId,
+      openSendDialog,
+      confirmSendTo1C,
+    };
+  },
 };
