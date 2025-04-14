@@ -1,3 +1,13 @@
+<q-expansion-item
+  expand-separator
+  switch-toggle-side
+  :label="'Проходят адаптацию (' + underGoingAdaptation.length + ')'"
+  class="expansion-item-wrapper"
+  v-model="expansionStates.undergoing"
+  @update:model-value="saveExpansionState"
+>
+
+
 setup() {
   const underGoingAdaptation = ref([]);
   const preparingForReception = ref([]);
