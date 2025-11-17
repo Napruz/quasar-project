@@ -6,8 +6,9 @@ if (sReqID != 0) {
     var oReqDocTE = oReqDoc.TopElem;
 
     // Подставляем значения в поля формы
+    var fField; // объявляем один раз перед циклом
     for (var i = 0; i < oForm.form_fields.length; i++) {
-        var fField = oForm.form_fields[i]; // переименовано
+        fField = oForm.form_fields[i]; // присваиваем без var
         switch(fField.name){
             case "name":
                 fField.value = oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_name").value;
