@@ -33,7 +33,6 @@ aFormFieldsDef = ParseJson(getParam("form_fields_default", "[]"));
 sSubmitType = getFormField("__submit_type__", getFormFieldDefault("__submit_type__", "step_0")); 
 
 // --- ВАЖНО: Правильное получение request_id ---
-// Сначала пробуем получить из параметров URL, потом из полей формы
 var sReqID = OptInt(getParam("request_id", getFormField("request_id", getFormFieldDefault("request_id", 0))), 0);
 
 LogAction("DEBUG: request_id = " + sReqID + ", submit_type = " + sSubmitType);
@@ -213,8 +212,8 @@ if (sReqID != 0) {
         var oReqDocTE = oReqDoc.TopElem; 
         
         // Подставляем значения в поля формы 
-        for (var i = 0; i < oForm.form_fields.length; i++) { 
-            var fField = oForm.form_fields[i];
+        for (var load_i = 0; load_i < oForm.form_fields.length; load_i++) { 
+            var fField = oForm.form_fields[load_i];
             switch(fField.name){ 
                 case "name": 
                     fField.value = oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_name").value; 
@@ -276,8 +275,8 @@ switch(sSubmitType){
     case "step_0": { 
         aMandatoryFields = []; 
         aVisibleFields = ["rules"]; 
-        for(var i = 0; i < oForm.form_fields.length; i++){ 
-            var oField = oForm.form_fields[i];
+        for(var step0_i = 0; step0_i < oForm.form_fields.length; step0_i++){ 
+            var oField = oForm.form_fields[step0_i];
             oField.type = (ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "hidden": oField.type); 
             try{oField.validation=(ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "": oField.validation);}catch(_e){} 
             oField.mandatory = (ArrayOptFind(aMandatoryFields,"This==oField.name")!=undefined); 
@@ -294,8 +293,8 @@ switch(sSubmitType){
     case "main_data": { 
         aMandatoryFields = ["name","sheCode","function","vacancyReason","workPlace"]; 
         aVisibleFields = ["name","subdivision_id","subdivision_text","sheCode","function","vacancyReason","workPlace"]; 
-        for(var i = 0; i < oForm.form_fields.length; i++){ 
-            var oField = oForm.form_fields[i];
+        for(var main_i = 0; main_i < oForm.form_fields.length; main_i++){ 
+            var oField = oForm.form_fields[main_i];
             oField.type = (ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "hidden": oField.type); 
             try{oField.validation=(ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "": oField.validation);}catch(_e){} 
             oField.mandatory = (ArrayOptFind(aMandatoryFields,"This==oField.name")!=undefined); 
@@ -312,8 +311,8 @@ switch(sSubmitType){
     case "salary": { 
         aMandatoryFields = ["salary","bonusSystem"]; 
         aVisibleFields = ["salary","bonusSystem","gasCost","jobSharing"]; 
-        for(var i = 0; i < oForm.form_fields.length; i++){ 
-            var oField = oForm.form_fields[i];
+        for(var salary_i = 0; salary_i < oForm.form_fields.length; salary_i++){ 
+            var oField = oForm.form_fields[salary_i];
             oField.type = (ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "hidden": oField.type); 
             try{oField.validation=(ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "": oField.validation);}catch(_e){} 
             oField.mandatory = (ArrayOptFind(aMandatoryFields,"This==oField.name")!=undefined); 
@@ -330,8 +329,8 @@ switch(sSubmitType){
     case "kupor": { 
         aMandatoryFields = ["hiringPurpose"]; 
         aVisibleFields = ["hiringPurpose"]; 
-        for(var i = 0; i < oForm.form_fields.length; i++){ 
-            var oField = oForm.form_fields[i];
+        for(var kupor_i = 0; kupor_i < oForm.form_fields.length; kupor_i++){ 
+            var oField = oForm.form_fields[kupor_i];
             oField.type = (ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "hidden": oField.type); 
             try{oField.validation=(ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "": oField.validation);}catch(_e){} 
             oField.mandatory = (ArrayOptFind(aMandatoryFields,"This==oField.name")!=undefined); 
@@ -348,8 +347,8 @@ switch(sSubmitType){
     case "another": { 
         aMandatoryFields = []; 
         aVisibleFields = ["duties","requirements"]; 
-        for(var i = 0; i < oForm.form_fields.length; i++){ 
-            var oField = oForm.form_fields[i];
+        for(var another_i = 0; another_i < oForm.form_fields.length; another_i++){ 
+            var oField = oForm.form_fields[another_i];
             oField.type = (ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "hidden": oField.type); 
             try{oField.validation=(ArrayOptFind(aVisibleFields,"This==oField.name")==undefined ? "": oField.validation);}catch(_e){} 
             oField.mandatory = (ArrayOptFind(aMandatoryFields,"This==oField.name")!=undefined); 
