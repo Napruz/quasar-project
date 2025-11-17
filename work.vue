@@ -89,3 +89,46 @@ for (var i = 0; i < oForm.form_fields.length; i++) {
         case "requirements": fField.value = oReqDocTE.custom_elems.ObtainChildByKey("f_candidate_quality").value; break;
     }
 }
+
+  // --- Получаем ID редактируемой заявки ---
+var sReqID = OptInt(getFormField("request_id", getFormFieldDefault("request_id", "step_0")), 0);
+if (sReqID == 0) {
+    throw "Не указан ID редактируемой заявки!";
+}
+
+// --- Открываем существующую заявку ---
+var oReqDoc = tools.open_doc(sReqID);
+var oReqDocTE = oReqDoc.TopElem;
+oReqDocTE.person_id = oOptions.id;
+
+
+// --- Сохраняем изменения в заявку ---
+// Эта часть вызывается при сабмите формы
+function saveForm() {
+    for (var i = 0; i < oForm.form_fields.length; i++) {
+        var fField = oForm.form_fields[i];
+        switch(fField.name){
+            case "name": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_name").value = fField.value; break;
+            case "subdivision_id": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_subdivision_id").value = fField.value; break;
+            case "subdivision_text": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_subdivision_name").value = fField.value; break;
+            case "sheCode": oReqDocTE.custom_elems.ObtainChildByKey("f_cod_he").value = fField.value; break;
+            case "function": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_function").value = fField.value; break;
+            case "vacancyReason": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_cause").value = fField.value; break;
+            case "workPlace": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_place").value = fField.value; break;
+            case "salary": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_salary").value = fField.value; break;
+            case "bonusSystem": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_bonus_system").value = fField.value; break;
+            case "gasCost": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_gas_cost").value = fField.value; break;
+            case "jobSharing": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_job_sharing").value = fField.value; break;
+            case "hiringPurpose": oReqDocTE.custom_elems.ObtainChildByKey("f_vacancy_cupor_rationale").value = fField.value; break;
+            case "duties": oReqDocTE.custom_elems.ObtainChildByKey("f_candidate_function").value = fField.value; break;
+            case "requirements": oReqDocTE.custom_elems.ObtainChildByKey("f_candidate_quality").value = fField.value; break;
+        }
+    }
+
+    // Сохраняем документ
+    oReqDoc.Save();
+    tools.show_message("Заявка успешно обновлена!");
+}
+
+// --- Вызов saveForm() привяжи к кнопке сабмита формы ---
+
