@@ -2,12 +2,39 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
 
     var reportStr = new Binary();
 
-    reportStr.AppendStr("<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'/></head><body><table border='1'>");
+    reportStr.AppendStr(
+    "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
+    "xmlns:x='urn:schemas-microsoft-com:office:excel'>" +
+    "<head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>" +
+    "<style>" +
+
+    "table { border-collapse: collapse; font-family: Arial; font-size: 10pt; }" +
+    "td { border:1px solid #000; padding:4px; vertical-align:top; }" +
+
+    ".header { background:#d9d9d9; font-weight:bold; text-align:center; }" +
+    ".subheader { background:#eeeeee; font-weight:bold; text-align:center; }" +
+
+    ".ok { background:#e6ffe6; }" +
+    ".fail { background:#ffe6e6; }" +
+
+    ".w-name { width:200px; }" +
+    ".w-test { width:200px; }" +
+    ".w-small { width:90px; }" +
+    ".w-date { width:120px; }" +
+    ".w-score { width:90px; text-align:center; }" +
+
+    ".w-q { width:250px; }" +
+    ".w-type { width:120px; }" +
+    ".w-result { width:100px; text-align:center; }" +
+    ".w-answer { width:200px; }" +
+
+    "</style></head><body><table>"
+    );
 
     var aLearnings = [];
     var aQuestions = [];
 
-    // --- СБОР ДАННЫХ ---
+    // --- СБОР ---
     for (i in aCollaboratorIDArray)
     {
         var person_id = aCollaboratorIDArray[i];
@@ -85,7 +112,6 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
         }
     }
 
-    // --- ГРУППИРОВКА ПО ТЕСТАМ ---
     var tests = ArraySelectDistinct(aLearnings, "test_name");
 
     for (t in tests)
@@ -93,36 +119,35 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
         var testName = tests[t];
         var rows = ArraySelect(aLearnings, "This.test_name == testName");
 
-        // --- HEADER 1 (вопросы) ---
+        // --- ВОПРОСЫ ---
         reportStr.AppendStr("<tr>");
         for (i = 0; i < 9; i++) reportStr.AppendStr("<td></td>");
 
         for (q in aQuestions)
         {
-            reportStr.AppendStr("<td colspan='4'><b>" + aQuestions[q].text + "</b></td>");
+            reportStr.AppendStr("<td colspan='4' class='subheader w-q'>" + aQuestions[q].text + "</td>");
         }
-
         reportStr.AppendStr("</tr>");
 
-        // --- HEADER 2 ---
-        reportStr.AppendStr("<tr>");
+        // --- ЗАГОЛОВКИ ---
+        reportStr.AppendStr("<tr class='header'>");
 
-        reportStr.AppendStr("<td><b>Пользователь</b></td>");
-        reportStr.AppendStr("<td><b>Название теста</b></td>");
-        reportStr.AppendStr("<td><b>Код</b></td>");
-        reportStr.AppendStr("<td><b>Организация</b></td>");
-        reportStr.AppendStr("<td><b>Подразделение</b></td>");
-        reportStr.AppendStr("<td><b>Должность</b></td>");
-        reportStr.AppendStr("<td><b>Дата</b></td>");
-        reportStr.AppendStr("<td><b>Статус</b></td>");
-        reportStr.AppendStr("<td><b>Баллы</b></td>");
+        reportStr.AppendStr("<td class='w-name'>Пользователь</td>");
+        reportStr.AppendStr("<td class='w-test'>Название теста</td>");
+        reportStr.AppendStr("<td class='w-small'>Код</td>");
+        reportStr.AppendStr("<td class='w-name'>Организация</td>");
+        reportStr.AppendStr("<td class='w-name'>Подразделение</td>");
+        reportStr.AppendStr("<td class='w-name'>Должность</td>");
+        reportStr.AppendStr("<td class='w-date'>Дата</td>");
+        reportStr.AppendStr("<td class='w-small'>Статус</td>");
+        reportStr.AppendStr("<td class='w-score'>Баллы</td>");
 
         for (q in aQuestions)
         {
-            reportStr.AppendStr("<td><b>Тип</b></td>");
-            reportStr.AppendStr("<td><b>Результат</b></td>");
-            reportStr.AppendStr("<td><b>Полученный ответ</b></td>");
-            reportStr.AppendStr("<td><b>Правильный ответ</b></td>");
+            reportStr.AppendStr("<td class='w-type'>Тип</td>");
+            reportStr.AppendStr("<td class='w-result'>Результат</td>");
+            reportStr.AppendStr("<td class='w-answer'>Ответ</td>");
+            reportStr.AppendStr("<td class='w-answer'>Правильный</td>");
         }
 
         reportStr.AppendStr("</tr>");
@@ -131,7 +156,6 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
         for (r in rows)
         {
             var l = rows[r];
-
             var percent = (l.max_score > 0) ? Math.round(l.score / l.max_score * 100) : 0;
 
             reportStr.AppendStr("<tr>");
@@ -142,7 +166,7 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
             reportStr.AppendStr("<td>" + l.org + "</td>");
             reportStr.AppendStr("<td>" + l.subdivision + "</td>");
             reportStr.AppendStr("<td>" + l.position + "</td>");
-            reportStr.AppendStr("<td>" + StrDate(l.start_date, true, false) + "</td>");
+            reportStr.AppendStr("<td>" + StrDate(l.start_date,true,false) + "</td>");
             reportStr.AppendStr("<td>" + l.status + "</td>");
             reportStr.AppendStr("<td>" + l.score + " (" + percent + "%)</td>");
 
@@ -157,8 +181,10 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
                 }
                 else
                 {
+                    var cls = (curQ.result == "неверно") ? "fail" : "ok";
+
                     reportStr.AppendStr("<td>" + curQ.type + "</td>");
-                    reportStr.AppendStr("<td>" + curQ.result + "</td>");
+                    reportStr.AppendStr("<td class='" + cls + "'>" + curQ.result + "</td>");
                     reportStr.AppendStr("<td>" + curQ.answer + "</td>");
                     reportStr.AppendStr("<td>" + curQ.correct + "</td>");
                 }
@@ -167,8 +193,8 @@ function createReportString(aCollaboratorIDArray, aAsessmentIDArray, dStartDate,
             reportStr.AppendStr("</tr>");
         }
 
-        // --- ПУСТАЯ СТРОКА (как в эталоне) ---
-        reportStr.AppendStr("<tr><td colspan='100'></td></tr>");
+        // пустая строка
+        reportStr.AppendStr("<tr><td colspan='200'></td></tr>");
     }
 
     reportStr.AppendStr("</table></body></html>");
