@@ -50,7 +50,7 @@ try
 
                 for (var s = 0; s < ArrayCount(sections); s++)
                 {
-                    var section = sections[s];
+                    var section = ArrayGetElem(sections, s);
 
                     alert("section найден");
 
@@ -66,7 +66,7 @@ try
 
                     for (var qi = 0; qi < ArrayCount(questions); qi++)
                     {
-                        var q = questions[qi];
+                        var q = ArrayGetElem(questions, qi);
 
                         alert("question найден: " + q.ident);
 
@@ -86,7 +86,7 @@ try
 
                         qObj.quest_type = q.qtype;
 
-                        // статус
+                        // результат
                         qObj.result = (q.state == "passed") ? "верно" : "неверно";
 
                         // выбранные варианты (пока сырые)
