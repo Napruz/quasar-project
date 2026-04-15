@@ -18,27 +18,23 @@ try
     {
         var _cur_history = annals.au.history;
 
-        if (_cur_history == undefined)
+        if (!_cur_history)
         {
             alert("history undefined");
         }
-        else if (_cur_history.objects == undefined)
+        else if (!_cur_history.objects || !_cur_history.objects.object)
         {
             alert("objects undefined");
-        }
-        else if (_cur_history.objects.object == undefined)
-        {
-            alert("objects.object undefined");
         }
         else
         {
             var objectsArr = _cur_history.objects.object;
 
-            alert("objectsArr count = " + ArrayCount(objectsArr));
+            alert("objectsArr count = " + objectsArr.length);
 
-            var firstObj = ArrayFirstElem(objectsArr);
+            var firstObj = objectsArr[0];
 
-            if (firstObj.section == undefined)
+            if (!firstObj.section)
             {
                 alert("section undefined");
             }
@@ -46,15 +42,15 @@ try
             {
                 var sections = firstObj.section;
 
-                alert("sections count = " + ArrayCount(sections));
+                alert("sections count = " + sections.length);
 
-                for (var s = 0; s < ArrayCount(sections); s++)
+                for (var s = 0; s < sections.length; s++)
                 {
-                    var section = ArrayGetElem(sections, s);
+                    var section = sections[s];
 
                     alert("section найден");
 
-                    if (section.question == undefined)
+                    if (!section.question)
                     {
                         alert("question undefined");
                         continue;
@@ -62,17 +58,17 @@ try
 
                     var questions = section.question;
 
-                    alert("questions count = " + ArrayCount(questions));
+                    alert("questions count = " + questions.length);
 
-                    for (var qi = 0; qi < ArrayCount(questions); qi++)
+                    for (var qi = 0; qi < questions.length; qi++)
                     {
-                        var q = ArrayGetElem(questions, qi);
+                        var q = questions[qi];
 
                         alert("question найден: " + q.ident);
 
                         var qid = q.ident;
 
-                        // --- добавляем в общий список вопросов ---
+                        // --- добавляем вопрос ---
                         if (ArrayOptFind(aQuestions, "This.id == " + XQueryLiteral(qid)) == undefined)
                         {
                             aQuestions.push({
@@ -81,25 +77,21 @@ try
                             });
                         }
 
-                        // --- формируем объект ответа ---
                         var qObj = new Object();
 
                         qObj.quest_type = q.qtype;
-
-                        // результат
                         qObj.result = (q.state == "passed") ? "верно" : "неверно";
 
-                        // выбранные варианты (пока сырые)
-                        if (q.variant != undefined)
+                        // выбранные ответы (пока 0/1)
+                        if (q.variant)
                         {
-                            qObj.answer = ArrayMerge(q.variant, "This", "; ");
+                            qObj.answer = q.variant.join("; ");
                         }
                         else
                         {
                             qObj.answer = "";
                         }
 
-                        // правильный ответ (пока заглушка)
                         qObj.correct_answer = "";
 
                         obj.questions[qid] = qObj;
