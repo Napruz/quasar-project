@@ -2,100 +2,90 @@ try
 {
     alert("Открываем документ l.id = " + l.id);
 
-    var doc = tools.open_doc(l.id).TopElem;
+    doc = tools.open_doc(l.id).TopElem;
 
     alert("doc открыт");
 
     var annals = tools.annals_decrypt(doc);
 
-    alert("annals = " + tools.object_to_text(annals, 'json'));
-
     if (annals == null)
     {
-        alert("annals == NULL !!!");
+        alert("annals == null");
+    }
+    else if (annals.au == undefined)
+    {
+        alert("annals.au undefined");
+    }
+    else if (annals.au.history == undefined)
+    {
+        alert("history undefined");
+    }
+    else if (annals.au.history.objects == undefined)
+    {
+        alert("objects undefined");
+    }
+    else if (annals.au.history.objects.object == undefined)
+    {
+        alert("objects.object undefined");
     }
     else
     {
-        var _cur_history = annals.au.history;
+        var objectsArr = annals.au.history.objects.object;
 
-        if (!_cur_history)
+        alert("objectsArr count = " + ArrayCount(objectsArr));
+
+        for (var i_obj = 0; i_obj < ArrayCount(objectsArr); i_obj++)
         {
-            alert("history undefined");
-        }
-        else if (!_cur_history.objects || !_cur_history.objects.object)
-        {
-            alert("objects undefined");
-        }
-        else
-        {
-            var objectsArr = _cur_history.objects.object;
+            var objItem = objectsArr[i_obj];
 
-            alert("objectsArr count = " + objectsArr.length);
+            if (objItem.section == undefined)
+                continue;
 
-            var firstObj = objectsArr[0];
+            var sections = objItem.section;
 
-            if (!firstObj.section)
+            alert("sections count = " + ArrayCount(sections));
+
+            for (var i_sec = 0; i_sec < ArrayCount(sections); i_sec++)
             {
-                alert("section undefined");
-            }
-            else
-            {
-                var sections = firstObj.section;
+                var sec = sections[i_sec];
 
-                alert("sections count = " + sections.length);
+                if (sec.question == undefined)
+                    continue;
 
-                for (var s = 0; s < sections.length; s++)
+                var questions = sec.question;
+
+                for (var i_q = 0; i_q < ArrayCount(questions); i_q++)
                 {
-                    var section = sections[s];
+                    var q = questions[i_q];
 
-                    alert("section найден");
+                    alert("question найден: " + q.ident);
 
-                    if (!section.question)
+                    var qid = q.ident;
+
+                    // добавляем вопрос в общий список
+                    if (ArrayOptFind(aQuestions, "This.id == '" + qid + "'") == undefined)
                     {
-                        alert("question undefined");
-                        continue;
+                        aQuestions.push({
+                            id: qid,
+                            text: q.text
+                        });
                     }
 
-                    var questions = section.question;
+                    var qObj = new Object();
 
-                    alert("questions count = " + questions.length);
+                    qObj.quest_type = q.qtype;
+                    qObj.result = (q.state == "passed" ? "верно" : "неверно");
 
-                    for (var qi = 0; qi < questions.length; qi++)
-                    {
-                        var q = questions[qi];
+                    // ответ пользователя
+                    if (q.variant != undefined)
+                        qObj.answer = ArrayMerge(q.variant, "This", "; ");
+                    else
+                        qObj.answer = "";
 
-                        alert("question найден: " + q.ident);
+                    // правильный ответ (в annals его нет)
+                    qObj.correct_answer = "";
 
-                        var qid = q.ident;
-
-                        // --- добавляем вопрос ---
-                        if (ArrayOptFind(aQuestions, "This.id == " + XQueryLiteral(qid)) == undefined)
-                        {
-                            aQuestions.push({
-                                id: qid,
-                                text: HtmlToPlainText(q.text)
-                            });
-                        }
-
-                        var qObj = new Object();
-
-                        qObj.quest_type = q.qtype;
-                        qObj.result = (q.state == "passed") ? "верно" : "неверно";
-
-                        // выбранные ответы (пока 0/1)
-                        if (q.variant)
-                        {
-                            qObj.answer = q.variant.join("; ");
-                        }
-                        else
-                        {
-                            qObj.answer = "";
-                        }
-
-                        qObj.correct_answer = "";
-
-                        obj.questions[qid] = qObj;
-                    }
+                    obj.questions[qid] = qObj;
                 }
             }
         }
