@@ -34,10 +34,9 @@ try
 
         alert("objectsArr count = " + ArrayCount(objectsArr));
 
-        for (var i_obj = 0; i_obj < ArrayCount(objectsArr); i_obj++)
+        // 🔥 ВАЖНО: только for in
+        for (var objItem in objectsArr)
         {
-            var objItem = objectsArr[i_obj];
-
             if (objItem.section == undefined)
                 continue;
 
@@ -45,24 +44,19 @@ try
 
             alert("sections count = " + ArrayCount(sections));
 
-            for (var i_sec = 0; i_sec < ArrayCount(sections); i_sec++)
+            for (var sec in sections)
             {
-                var sec = sections[i_sec];
-
                 if (sec.question == undefined)
                     continue;
 
                 var questions = sec.question;
 
-                for (var i_q = 0; i_q < ArrayCount(questions); i_q++)
+                for (var q in questions)
                 {
-                    var q = questions[i_q];
-
                     alert("question найден: " + q.ident);
 
                     var qid = q.ident;
 
-                    // добавляем вопрос в общий список
                     if (ArrayOptFind(aQuestions, "This.id == '" + qid + "'") == undefined)
                     {
                         aQuestions.push({
@@ -76,13 +70,11 @@ try
                     qObj.quest_type = q.qtype;
                     qObj.result = (q.state == "passed" ? "верно" : "неверно");
 
-                    // ответ пользователя
                     if (q.variant != undefined)
                         qObj.answer = ArrayMerge(q.variant, "This", "; ");
                     else
                         qObj.answer = "";
 
-                    // правильный ответ (в annals его нет)
                     qObj.correct_answer = "";
 
                     obj.questions[qid] = qObj;
