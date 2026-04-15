@@ -1,49 +1,43 @@
-var _cur_history = annals.au.history;
+var sections = firstObj.section;
 
-if (_cur_history == undefined)
+alert("sections COUNT = " + ArrayCount(sections));
+
+for (var si = 0; si < ArrayCount(sections); si++)
 {
-    alert("history undefined");
-}
-else if (ArrayCount(_cur_history.objects) == 0)
-{
-    alert("objects пустой");
-}
-else
-{
-    alert("objects НЕ пустой");
+    var section = sections[si];
+    alert("section = " + section);
 
-    var firstObj = ArrayFirstElem(_cur_history.objects);
-    alert("firstObj = " + firstObj);
-
-    var sections = firstObj.section;
-    alert("sections = " + sections);
-
-    for (s in sections)
+    if (section.question == undefined)
     {
-        alert("section = " + sections[s]);
+        alert("section.question == undefined");
+        continue;
+    }
 
-        for (q in sections[s].question)
+    alert("questions COUNT = " + ArrayCount(section.question));
+
+    for (var qi = 0; qi < ArrayCount(section.question); qi++)
+    {
+        var q = section.question[qi];
+
+        alert("question найден, id = " + q.id);
+
+        var qid = q.id;
+
+        if (ArrayOptFind(aQuestions, "This.id == " + qid) == undefined)
         {
-            alert("question найден");
-
-            var qid = q.id;
-
-            if (ArrayOptFind(aQuestions, "This.id == " + qid) == undefined)
-            {
-                aQuestions.push({
-                    id: qid,
-                    text: HtmlToPlainText(q.text)
-                });
-            }
-
-            var qObj = new Object();
-
-            qObj.quest_type = (q.qtype.OptForeignElem != undefined ? q.qtype.ForeignElem.name : "");
-            qObj.result = tools_web.is_correct_question(q) ? "верно" : "неверно";
-            qObj.answer = ArrayMerge(q.variant, "HtmlToPlainText(value)", "; ");
-            qObj.correct_answer = ArrayMerge(q.variant, "HtmlToPlainText(cor_value)", "; ");
-
-            obj.questions[qid] = qObj;
+            aQuestions.push({
+                id: qid,
+                text: HtmlToPlainText(q.text)
+            });
         }
+
+        var qObj = new Object();
+
+        qObj.quest_type = (q.qtype.OptForeignElem != undefined ? q.qtype.ForeignElem.name : "");
+        qObj.result = tools_web.is_correct_question(q) ? "верно" : "неверно";
+        qObj.answer = ArrayMerge(q.variant, "HtmlToPlainText(value)", "; ");
+        qObj.correct_answer = ArrayMerge(q.variant, "HtmlToPlainText(cor_value)", "; ");
+
+        obj.questions[qid] = qObj;
     }
 }
