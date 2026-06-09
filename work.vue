@@ -21,7 +21,8 @@ import {
 } from "vue";
 
 const calendarRef = ref(null);
-let calendarObserver = null;
+let observer = null;
+let debounceTimer = null;
 
 const monthMap = {
   Январь: "01",
@@ -39,10 +40,7 @@ const monthMap = {
 };
 
 const getDisplayedMonthYear = () => {
-  const root =
-    calendarRef.value?.$el ||
-    calendarRef.value;
-
+  const root = calendarRef.value?.$el || calendarRef.value;
   if (!root) return null;
 
   const blocks = root.querySelectorAll(
@@ -52,9 +50,7 @@ const getDisplayedMonthYear = () => {
   if (blocks.length < 2) return null;
 
   return {
-    month: monthMap[
-      blocks[0].textContent.trim()
-    ],
+    month: monthMap[blocks[0].textContent.trim()],
     year: blocks[1].textContent.trim(),
   };
 };
@@ -62,10 +58,7 @@ const getDisplayedMonthYear = () => {
 const bindCalendarTooltips = async () => {
   await nextTick();
 
-  const root =
-    calendarRef.value?.$el ||
-    calendarRef.value;
-
+  const root = calendarRef.value?.$el || calendarRef.value;
   if (!root) return;
 
   const buttons = root.querySelectorAll(
@@ -73,109 +66,75 @@ const bindCalendarTooltips = async () => {
   );
 
   buttons.forEach((btn) => {
-    if (btn.dataset.tooltipBound) return;
+    const dot = btn.querySelector(".q-date__event");
 
-    const eventDot =
-      btn.querySelector(".q-date__event");
+    // только дни с событиями
+    if (!dot) return;
 
-    if (!eventDot) return;
-
-    btn.dataset.tooltipBound = "1";
-
-    btn.addEventListener("mouseenter", () => {
-      const day = btn
-        .querySelector(".block")
-        ?.textContent?.trim();
-
+    btn.onmouseenter = () => {
+      const day = btn.querySelector(".block")?.textContent?.trim();
       if (!day) return;
 
-      const displayed =
-        getDisplayedMonthYear();
-
+      const displayed = getDisplayedMonthYear();
       if (!displayed) return;
 
       const date =
-        `${displayed.year}-${displayed.month}-${day.padStart(
-          2,
-          "0"
-        )}`;
+        `${displayed.year}-${displayed.month}-${day.padStart(2, "0")}`;
 
-      const events =
-        getEventsByDate(date);
-
+      const events = getEventsByDate(date);
       if (!events.length) return;
 
-      const rect =
-        btn.getBoundingClientRect();
-
-      const wrapper =
-        root
-          .closest(".calendar-wrapper")
-          .getBoundingClientRect();
+      const rect = btn.getBoundingClientRect();
+      const wrapper = root.closest(".calendar-wrapper")?.getBoundingClientRect();
 
       tooltip.value = {
         visible: true,
-        x:
-          rect.left -
-          wrapper.left +
-          rect.width / 2,
-        y:
-          rect.top -
-          wrapper.top -
-          10,
+        x: rect.left - wrapper.left + rect.width / 2,
+        y: rect.top - wrapper.top - 10,
         events,
       };
-    });
+    };
 
-    btn.addEventListener("mouseleave", () => {
+    btn.onmouseleave = () => {
       tooltip.value.visible = false;
-    });
+    };
   });
 };
 
 const initCalendarObserver = () => {
-  const root =
-    calendarRef.value?.$el ||
-    calendarRef.value;
-
+  const root = calendarRef.value?.$el || calendarRef.value;
   if (!root) return;
 
-  const daysContainer =
-    root.querySelector(
-      ".q-date__calendar-days"
-    );
+  const container = root.querySelector(".q-date__calendar-days");
+  if (!container) return;
 
-  if (!daysContainer) return;
+  observer = new MutationObserver(() => {
+    clearTimeout(debounceTimer);
 
-  calendarObserver =
-    new MutationObserver(() => {
+    debounceTimer = setTimeout(() => {
       bindCalendarTooltips();
-    });
+    }, 30);
+  });
 
-  calendarObserver.observe(
-    daysContainer,
-    {
-      childList: true,
-      subtree: true,
-    }
-  );
+  observer.observe(container, {
+    childList: true,
+    subtree: true,
+  });
 };
 
 onMounted(async () => {
   await fetchDatePickerInfo();
-
   await nextTick();
 
   bindCalendarTooltips();
-
   initCalendarObserver();
 });
 
-  onUnmounted(() => {
-  calendarObserver?.disconnect();
+onUnmounted(() => {
+  observer?.disconnect();
 });
 
-    return {
+return {
   calendarRef,
   selectedDate,
   selectedEvents,
@@ -188,6 +147,3 @@ onMounted(async () => {
   hasEvents,
 };
 
-    .calendar-tooltip {
-  pointer-events: none;
-}
