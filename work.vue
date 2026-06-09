@@ -1,149 +1,65 @@
-<q-date
-  ref="calendarRef"
-  v-model="selectedDate"
-  flat
-  bordered
-  minimal
-  mask="YYYY-MM-DD"
-  color="primary"
-  class="custom-calendar"
-  :events="eventDates"
-  :event-color="getEventColor"
-  @update:model-value="onDateClick"
-/>
-
-import {
-  ref,
-  onMounted,
-  onUnmounted,
-  nextTick,
-  computed
-} from "vue";
-
 const calendarRef = ref(null);
-let observer = null;
-let debounceTimer = null;
 
-const monthMap = {
-  Январь: "01",
-  Февраль: "02",
-  Март: "03",
-  Апрель: "04",
-  Май: "05",
-  Июнь: "06",
-  Июль: "07",
-  Август: "08",
-  Сентябрь: "09",
-  Октябрь: "10",
-  Ноябрь: "11",
-  Декабрь: "12",
-};
-
-const getDisplayedMonthYear = () => {
-  const root = calendarRef.value?.$el || calendarRef.value;
-  if (!root) return null;
-
-  const blocks = root.querySelectorAll(
-    ".q-date__navigation .block"
-  );
-
-  if (blocks.length < 2) return null;
-
-  return {
-    month: monthMap[blocks[0].textContent.trim()],
-    year: blocks[1].textContent.trim(),
-  };
-};
-
-const bindCalendarTooltips = async () => {
-  await nextTick();
-
-  const root = calendarRef.value?.$el || calendarRef.value;
+const onCalendarMouseMove = (e) => {
+  const root = calendarRef.value?.$el;
   if (!root) return;
 
-  const buttons = root.querySelectorAll(
+  const btn = e.target.closest(
     ".q-date__calendar-days button"
   );
 
-  buttons.forEach((btn) => {
-    const dot = btn.querySelector(".q-date__event");
+  if (!btn) {
+    tooltip.value.visible = false;
+    return;
+  }
 
-    // только дни с событиями
-    if (!dot) return;
+  const dot = btn.querySelector(".q-date__event");
+  if (!dot) {
+    tooltip.value.visible = false;
+    return;
+  }
 
-    btn.onmouseenter = () => {
-      const day = btn.querySelector(".block")?.textContent?.trim();
-      if (!day) return;
+  const day = btn.querySelector(".block")?.textContent?.trim();
+  if (!day) return;
 
-      const displayed = getDisplayedMonthYear();
-      if (!displayed) return;
+  const displayed = getDisplayedMonthYear();
+  if (!displayed) return;
 
-      const date =
-        `${displayed.year}-${displayed.month}-${day.padStart(2, "0")}`;
+  const date =
+    `${displayed.year}-${displayed.month}-${day.padStart(2, "0")}`;
 
-      const events = getEventsByDate(date);
-      if (!events.length) return;
+  const events = getEventsByDate(date);
+  if (!events.length) {
+    tooltip.value.visible = false;
+    return;
+  }
 
-      const rect = btn.getBoundingClientRect();
-      const wrapper = root.closest(".calendar-wrapper")?.getBoundingClientRect();
+  const rect = btn.getBoundingClientRect();
+  const wrapper = root
+    .closest(".calendar-wrapper")
+    ?.getBoundingClientRect();
 
-      tooltip.value = {
-        visible: true,
-        x: rect.left - wrapper.left + rect.width / 2,
-        y: rect.top - wrapper.top - 10,
-        events,
-      };
-    };
-
-    btn.onmouseleave = () => {
-      tooltip.value.visible = false;
-    };
-  });
-};
-
-const initCalendarObserver = () => {
-  const root = calendarRef.value?.$el || calendarRef.value;
-  if (!root) return;
-
-  const container = root.querySelector(".q-date__calendar-days");
-  if (!container) return;
-
-  observer = new MutationObserver(() => {
-    clearTimeout(debounceTimer);
-
-    debounceTimer = setTimeout(() => {
-      bindCalendarTooltips();
-    }, 30);
-  });
-
-  observer.observe(container, {
-    childList: true,
-    subtree: true,
-  });
+  tooltip.value = {
+    visible: true,
+    x: rect.left - wrapper.left + rect.width / 2,
+    y: rect.top - wrapper.top - 10,
+    events,
+  };
 };
 
 onMounted(async () => {
   await fetchDatePickerInfo();
   await nextTick();
 
-  bindCalendarTooltips();
-  initCalendarObserver();
+  const root = calendarRef.value?.$el;
+  if (root) {
+    root.addEventListener("mousemove", onCalendarMouseMove);
+  }
 });
 
 onUnmounted(() => {
-  observer?.disconnect();
+  const root = calendarRef.value?.$el;
+  if (root) {
+    root.removeEventListener("mousemove", onCalendarMouseMove);
+  }
 });
-
-return {
-  calendarRef,
-  selectedDate,
-  selectedEvents,
-  tooltip,
-  onDateClick,
-  goToEvent,
-  eventDates,
-  getEventColor,
-  getEventsByDate,
-  hasEvents,
-};
-
